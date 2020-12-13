@@ -20,6 +20,9 @@ public:
     // Useful for converting from bitboard representation to array representation of the board.
     TileContents GetTile(unsigned tile_index) const;
 
+    // Update board state according to m and return true, if m is valid. Else return false.
+    bool ApplyMove(Move m);
+
 
 private:
     struct PlayerBitboards bitboards[2];    // Player pieces, indexed by COLOR_WHITE or COLOR_BLACK

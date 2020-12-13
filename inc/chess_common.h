@@ -9,7 +9,7 @@
 #endif
 
 #include <cassert>
-
+#include <cstdint>
 
 /******************************************************************************
  * Common definitions
@@ -57,6 +57,15 @@ struct CastlingRights {
     unsigned rook_a_has_moved : 1;
     unsigned rook_h_has_moved : 1;
     unsigned king_has_moved   : 1;
+};
+
+struct Move {
+    uint8_t src_tile_index;
+    uint8_t dest_tile_index;
+    enum PieceType piece_type;
+    enum PieceType captured_type;
+    enum PieceType promotion_type;
+    CastlingRights prev_castling_rights;
 };
 
 #define BITS_PER_RANK 8

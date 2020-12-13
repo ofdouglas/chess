@@ -1,8 +1,7 @@
 #include "board_state.h"
 
 
-BoardState::BoardState()
-{
+BoardState::BoardState() {
     // Initialize pawns
     bitboards[COLOR_WHITE].pawns = INITIAL_WHITE_PAWNS;
     bitboards[COLOR_BLACK].pawns = INITIAL_WHITE_PAWNS << (8 * 5);
@@ -44,3 +43,19 @@ TileContents BoardState::GetTile(unsigned tile_index) const {
 
     return tc;
 }
+
+bool BoardState::ApplyMove(Move mv) {
+    PlayerBitboards& pb = GetSelfBitboards();
+    pb.MovePiece(mv);
+
+    //  if it's a capture, must delete a piece from the opponent bitboard as well!
+
+    ply_counter++;
+
+    // TODO: update castling rights, move counters, en passant info...
+
+    return true;
+}
+
+
+

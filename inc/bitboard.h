@@ -59,6 +59,15 @@ struct PlayerBitboards {
     // Return the logical OR (aka union) of all of this player's bitboards.
     Bitboard GetBitboardsUnion() const;
 
+    // Get a reference to one of the bitboards, by piece type
+    Bitboard& GetBitboardByType(enum PieceType type);
+
+    // Apply the move to the bitboards
+    void MovePiece(Move m);
+
+    // Delete the piece at the given index
+    void DeletePiece(unsigned tile_index);
+
     Bitboard pawns;
     Bitboard knights;
     Bitboard bishops;
