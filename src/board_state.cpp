@@ -44,11 +44,14 @@ TileContents BoardState::GetTile(unsigned tile_index) const {
     return tc;
 }
 
-bool BoardState::ApplyMove(Move mv) {
-    PlayerBitboards& pb = GetSelfBitboards();
-    pb.MovePiece(mv);
+bool BoardState::ApplyMove(Move move) {
+    if (move.captures) {
+        TileContents tc = GetTile(move.dest_tile_index);
+        move.captured_type = tc.piece_type;
+        GetOpponentBitboards().DeletePiece(move.dest_tile_index);
+    }
 
-    //  if it's a capture, must delete a piece from the opponent bitboard as well!
+    GetSelfBitboards().MovePiece(move);
 
     ply_counter++;
 

@@ -3,7 +3,6 @@
 
 #include "chess_common.h"
 #include "board_state.h"
-#include <string>
 
 /******************************************************************************
  * Array Of Tiles representation (used for display purposes)
@@ -21,14 +20,14 @@ public:
     TileContents GetTile(unsigned rank, unsigned file);
 
     // Returns tile names "A1" through "H8". The tile_index must be in [0,63].
-    static std::string GetTileName(unsigned tile_index);
+    static const char* GetTileName(unsigned tile_index);
 
     // Returns tile names "A1" through "H8". 
-    static std::string GetTileName(unsigned rank, unsigned file);
+    static const char* GetTileName(unsigned rank, unsigned file);
 
 private:
     struct TileContents tiles_[64];
-    static const std::string tile_names_[64];
+    static const char* tile_names_[64];
 };
 
 

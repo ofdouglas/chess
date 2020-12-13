@@ -65,7 +65,7 @@ void Terminal::PrintBoard(const BoardState& bs) {
     for (int file = 0; file < 8; file++) {
         printf("%c ", 'a' + file);
     }
-    puts("\n");
+    printf("\n%s to move: \n\n", bs.GetPlayerToMove() == COLOR_WHITE ? "WHITE" : "BLACK");
 }
 
 // Returns -1 if invalid tile index
