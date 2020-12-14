@@ -69,7 +69,8 @@ struct Move {
         dest_tile_index(0), 
         piece_type(PIECE_TYPE_NONE), 
         captured_type(PIECE_TYPE_NONE), 
-        promotion_type(PIECE_TYPE_NONE) {}
+        promotion_type(PIECE_TYPE_NONE),
+        captures(0) {}
 
     void Print();
 

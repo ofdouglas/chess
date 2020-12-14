@@ -33,6 +33,10 @@ void Terminal::PrintTileFromTileContents(TileContents tc) {
     printf("%s", piece);
 }
 
+void Terminal::PrintMessage(const char* msg) {
+    puts(msg);
+}
+
 void Terminal::PrintBoard(const BoardState& bs) {
     TileContentsArray board(bs);
 

@@ -12,21 +12,6 @@ const char* TileContentsArray::tile_names_[64] = {
 };
 
 
-/******************************************************************************
- * Not sure if needed. If so, is there a better place for these helper functions?
- *****************************************************************************/
-static unsigned rank_from_tile_index(unsigned tile_index) {
-    return tile_index >> 3;
-}
-
-static unsigned file_from_tile_index(unsigned tile_index) {
-    return tile_index & 7;
-}
-
-static unsigned tile_index_from_rank_file(unsigned rank, unsigned file) {
-    return rank * 8 + file;
-}
-
 
 TileContents::TileContents(enum Color c, enum PieceType t) : color(c), piece_type(t) {}
 TileContents::TileContents() : color(COLOR_NONE), piece_type(PIECE_TYPE_NONE) {}
@@ -45,7 +30,7 @@ TileContents TileContentsArray::GetTile(unsigned tile_index) {
 }
 
 TileContents TileContentsArray::GetTile(unsigned rank, unsigned file) {
-    return tiles_[tile_index_from_rank_file(rank, file)];
+    return tiles_[TileIndexFromRankAndFile(rank, file)];
 }
 
 const char* TileContentsArray::GetTileName(unsigned tile_index) {
@@ -53,5 +38,5 @@ const char* TileContentsArray::GetTileName(unsigned tile_index) {
 }
 
 const char* TileContentsArray::GetTileName(unsigned rank, unsigned file) {
-    return tile_names_[tile_index_from_rank_file(rank, file)];
+    return tile_names_[TileIndexFromRankAndFile(rank, file)];
 }

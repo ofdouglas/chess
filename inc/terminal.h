@@ -5,6 +5,7 @@ class Terminal {
 public:
     void PrintBoard(const BoardState& bs);
     Move GetPlayerMove();
+    void PrintMessage(const char* msg);
 
 private:
     void PrintTileFromTileContents(TileContents tc);

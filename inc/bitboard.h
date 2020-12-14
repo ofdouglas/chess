@@ -8,6 +8,12 @@
 #define A_FILE                  0x0101010101010101ULL
 #define H_FILE                  0x8080808080808080ULL
 #define RANK_1                  0x00000000000000FFULL
+#define RANK_2                  0x000000000000FF00ULL
+#define RANK_3                  0x0000000000FF0000ULL
+#define RANK_4                  0x00000000FF000000ULL
+#define RANK_5                  0x000000FF00000000ULL
+#define RANK_6                  0x0000FF0000000000ULL
+#define RANK_7                  0x00FF000000000000ULL
 #define RANK_8                  0xFF00000000000000ULL
 #define LIGHT_SQUARES           0x55AA55AA55AA55AAULL
 #define DARK_SQUARES            0xAA55AA55AA55AA55ULL
@@ -41,10 +47,10 @@ public:
     bool BitTest(unsigned index) const;
 
     // Sets the bit at the given index
-    void BitSet(unsigned index);
+    Bitboard BitSet(unsigned index);
 
     // Clears the bit at the given index
-    void BitClear(unsigned index);
+    Bitboard BitClear(unsigned index);
 
     // Return a new bitboard consisting of the OR of this bitboard and the other.
     Bitboard LogicOr(Bitboard other) const;
@@ -81,6 +87,10 @@ public:
     // Implements a generic shift by repeated single steps
     Bitboard Shift(int ranks, int files) const;
 
+    bool operator==(const Bitboard& other) const;
+
+    bool operator!=(const Bitboard& other) const;
+
 private:
     uint64_t bits_;
 };
@@ -100,12 +110,14 @@ inline bool Bitboard::BitTest(unsigned index) const {
     return bits_ & ((uint64_t)1 << index);
 }
 
-inline void Bitboard::BitSet(unsigned index) {
+inline Bitboard Bitboard::BitSet(unsigned index) {
     bits_ |= (uint64_t)1 << index;
+    return *this;
 }
 
-inline void Bitboard::BitClear(unsigned index) {
+inline Bitboard Bitboard::BitClear(unsigned index) {
     bits_ &= ~((uint64_t)1 << index);
+    return *this;
 }
 
 inline Bitboard Bitboard::LogicOr(Bitboard other) const {
@@ -140,8 +152,9 @@ inline unsigned Bitboard::Bitscan(enum BitscanDirection dir) const {
 }
 
 // Mask out pieces on the A or H file in these funcs so they shift off the board instead of wrapping
-inline Bitboard Bitboard::StepEast() const      { return Bitboard((bits_ & ~H_FILE) >> 1); }
-inline Bitboard Bitboard::StepWest() const      { return Bitboard((bits_ & ~A_FILE) << 1); }
+inline Bitboard Bitboard::StepEast() const      { return Bitboard((bits_ & ~H_FILE) << 1); }
+inline Bitboard Bitboard::StepWest() const      { return Bitboard((bits_ & ~A_FILE) >> 1); }
+
 inline Bitboard Bitboard::StepNorthWest() const { return Bitboard((bits_ & ~A_FILE) << 7); }
 inline Bitboard Bitboard::StepNorthEast() const { return Bitboard((bits_ & ~H_FILE) << 9); }
 inline Bitboard Bitboard::StepSouthWest() const { return Bitboard((bits_ & ~A_FILE) >> 9); }
@@ -167,6 +180,14 @@ inline Bitboard Bitboard::Shift(int ranks, int files) const {
         b = b.StepSouth();
 
     return b;
+}
+
+inline bool Bitboard::operator==(const Bitboard& other) const {
+    return bits_ == other.bits_;
+}
+
+inline bool Bitboard::operator!=(const Bitboard& other) const {
+    return !operator==(other);
 }
 
 // Represents one player's pieces as a set of bitboards
