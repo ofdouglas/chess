@@ -1,5 +1,5 @@
 #include "board_state.h"
-
+#include <cstring>
 
 BoardState::BoardState() {
     // Initialize pawns
@@ -15,6 +15,13 @@ BoardState::BoardState() {
         bitboards[i].queens = INITIAL_WHITE_QUEENS << shift_amount;
         bitboards[i].king = INITIAL_WHITE_KING << shift_amount;
     }
+}
+
+BoardState::BoardState(std::string init_state_fen) {
+    // Not implemented yet
+    assert(init_state_fen == "");
+
+    memset(this, 0, sizeof(BoardState));
 }
 
 enum Color BoardState::GetPlayerToMove() const {
@@ -60,5 +67,15 @@ bool BoardState::ApplyMove(Move move) {
     return true;
 }
 
+void BoardState::SetTile(unsigned tile_index, TileContents tc) {
+    Bitboard bb;
+    if (tc.color == COLOR_WHITE) {
+        bb = bitboards[COLOR_WHITE].GetBitboardByType(tc.piece_type);
+    } else {
+        bb = bitboards[COLOR_BLACK].GetBitboardByType(tc.piece_type);
+    }
+
+    bb.BitSet(tile_index);
+}
 
 

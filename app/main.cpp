@@ -5,12 +5,11 @@
 #include <cstdlib>
 #include <ctime>
 
-// Just to get names of candidate move tiles
-#include "tile_contents_array.h"
-void Move::Print() {
-    printf("Move %d from %s to %s\n", piece_type, TileContentsArray::GetTileName(src_tile_index), 
-        TileContentsArray::GetTileName(dest_tile_index));
-}
+
+// void Move::Print() {
+//     printf("Move %d from %s to %s\n", piece_type, TileContentsArray::GetTileName(src_tile_index), 
+//         TileContentsArray::GetTileName(dest_tile_index));
+// }
 
 enum PlayerType { PLAYER_TYPE_CPU, PLAYER_TYPE_HUMAN };
 enum PlayerType player_types[2];   // Indexed by COLOR_WHITE and COLOR_BLACK
@@ -31,7 +30,7 @@ int main(int argc, char* argv[]) {
 
         if (player_types[to_move] == PLAYER_TYPE_CPU) {
             move = engine.SelectMove(board_state);
-            move.Print();
+            //move.Print();
 
             if (move.captures) {
                 TileContents dest_tile = board_state.GetTile(move.dest_tile_index);

@@ -1,6 +1,8 @@
 #ifndef BOARD_STATE_H_DEFINED
 #define BOARD_STATE_H_DEFINED
 
+#include <string>
+
 #include "chess_common.h"
 #include "bitboard.h"
 
@@ -8,8 +10,12 @@
 class BoardState {
 public:
 
+    // Set up the board for the start of a standard game.
     BoardState();
-    // TODO: add ctor which accepts FEN or other specification for non-default start position
+
+    // Initialize the board to the given state, which must be in FEN notation.
+    // TODO: not implemented yet! But the empty string can be passed to get an empty board.
+    BoardState(std::string init_state_fen);
 
     enum Color GetPlayerToMove() const;
 
@@ -20,8 +26,12 @@ public:
     // Useful for converting from bitboard representation to array representation of the board.
     TileContents GetTile(unsigned tile_index) const;
 
+    // Useful for test purposes (e.g. adding pieces). Probably doesn't have any use in a game.
+    void SetTile(unsigned tile_index, TileContents tc);
+
     // Update board state according to m and return true, if m is valid. Else return false.
     bool ApplyMove(Move m);
+
 
 
 private:

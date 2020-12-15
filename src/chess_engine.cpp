@@ -8,9 +8,9 @@ Move ChessEngine::SelectMove(BoardState& bs) {
     GenerateMoves(bs);
     assert(move_list_.size() > 0);
 
-    for (int i = 0; i < move_list_.size(); i++) {
-        move_list_[i].Print();
-    }
+    // for (int i = 0; i < move_list_.size(); i++) {
+    //     move_list_[i].Print();
+    // }
 
     return move_list_[rand() % move_list_.size()];
 }

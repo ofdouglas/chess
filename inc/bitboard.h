@@ -31,6 +31,8 @@
 #define KNIGHT_PATTERN_D4       0x0000142200221400ULL
 #define D4_TILE_INDEX           27
 
+
+
 // Represents chess board attributes (such as locations of pieces) via arrays of bits.
 // Bit->Tile mapping is in little-endian rank-file format: bit0 -> A1, bit1 -> B1, ..., bit8 -> A2
 class Bitboard {
