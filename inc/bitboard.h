@@ -47,22 +47,22 @@ public:
     bool BitTest(unsigned index) const;
 
     // Sets the bit at the given index
-    Bitboard BitSet(unsigned index);
+    Bitboard& BitSet(unsigned index);
 
     // Clears the bit at the given index
-    Bitboard BitClear(unsigned index);
+    Bitboard& BitClear(unsigned index);
 
-    // Return a new bitboard consisting of the OR of this bitboard and the other.
-    Bitboard LogicOr(Bitboard other) const;
+    // Bitwise operators
+    Bitboard operator|(const Bitboard& other) const;
+    Bitboard& operator|=(const Bitboard& other);
 
-    // Return a new bitboard consisting of the AND of this bitboard and the other.
-    Bitboard LogicAnd(Bitboard other) const;
+    Bitboard operator&(const Bitboard& other) const;
+    Bitboard& operator&=(const Bitboard& other);
 
-    // Return a new bitboard consisting of the XOR of this bitboard and the other.
-    Bitboard LogicXor(Bitboard other) const;
+    Bitboard operator^(const Bitboard& other) const;
+    Bitboard& operator^=(const Bitboard& other);
 
-    // Return a new bitboard with all bits flipped 
-    Bitboard Invert() const;
+    Bitboard operator~() const;
 
     // Finds index of least significant bit that is set. At least one bit must be set.
     unsigned BitscanForward() const ;
@@ -87,8 +87,8 @@ public:
     // Implements a generic shift by repeated single steps
     Bitboard Shift(int ranks, int files) const;
 
+    // Equals and not equals operators
     bool operator==(const Bitboard& other) const;
-
     bool operator!=(const Bitboard& other) const;
 
 private:
@@ -110,29 +110,44 @@ inline bool Bitboard::BitTest(unsigned index) const {
     return bits_ & ((uint64_t)1 << index);
 }
 
-inline Bitboard Bitboard::BitSet(unsigned index) {
+inline Bitboard& Bitboard::BitSet(unsigned index) {
     bits_ |= (uint64_t)1 << index;
     return *this;
 }
 
-inline Bitboard Bitboard::BitClear(unsigned index) {
+inline Bitboard& Bitboard::BitClear(unsigned index) {
     bits_ &= ~((uint64_t)1 << index);
     return *this;
 }
 
-inline Bitboard Bitboard::LogicOr(Bitboard other) const {
+inline Bitboard Bitboard::operator|(const Bitboard& other) const {
     return Bitboard(bits_ | other.GetBits());
 }
 
-inline Bitboard Bitboard::LogicAnd(Bitboard other) const {
+inline Bitboard& Bitboard::operator|=(const Bitboard& other) {
+    bits_ |= other.bits_;
+    return *this;
+}
+
+inline Bitboard Bitboard::operator&(const Bitboard& other) const {
     return Bitboard(bits_ & other.GetBits());
 }
 
-inline Bitboard Bitboard::LogicXor(Bitboard other) const {
+inline Bitboard& Bitboard::operator&=(const Bitboard& other) {
+    bits_ &= other.bits_;
+    return *this;
+}
+
+inline Bitboard Bitboard::operator^(const Bitboard& other) const {
     return Bitboard(bits_ ^ other.GetBits());
 }
 
-inline Bitboard Bitboard::Invert() const {
+inline Bitboard& Bitboard::operator^=(const Bitboard& other) {
+    bits_ ^= other.bits_;
+    return *this;
+}
+
+inline Bitboard Bitboard::operator~() const {
     return Bitboard(~bits_);
 }
 

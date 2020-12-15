@@ -54,11 +54,7 @@ int main(int argc, char* argv[]) {
             move.captured_type = dest_tile.piece_type;
             move.captures = move.captured_type != PIECE_TYPE_NONE;
         }
-
-        // TODO: better place to put it?
-
-
-        // TODO: consider that PlayerMove may not be legal!
+        
         board_state.ApplyMove(move);
     }
 

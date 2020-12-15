@@ -43,8 +43,8 @@ bool ChessEngine::IsOwnKingInCheck(BoardState& bs) {
 void ChessEngine::GenerateMoves(BoardState& bs) {
     targets_ = bs.GetOpponentBitboards().GetBitboardsUnion();
     friendlies_ = bs.GetSelfBitboards().GetBitboardsUnion();
-    occupied_tiles_ = targets_.LogicOr(friendlies_);
-    empty_tiles_ = occupied_tiles_.Invert();
+    occupied_tiles_ = targets_ | friendlies_;
+    empty_tiles_ = ~occupied_tiles_;
 
     move_list_.clear();
 
@@ -73,7 +73,7 @@ Bitboard ChessEngine::GetEmptyBoardRayAttacks(unsigned tile_index, enum Directio
     }
 
     for (int i = 1; i <= 7; i++) {
-        b = b.LogicOr(b.Shift(shifts[0], shifts[1]));
+        b |= b.Shift(shifts[0], shifts[1]);
     }
     return b.BitClear(tile_index);
 }
@@ -97,13 +97,13 @@ bool IsNegative(enum Direction dir)  {
 
 Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, enum Direction dir) const {
     Bitboard attacks = GetEmptyBoardRayAttacks(tile_index, dir);
-    Bitboard blockers = attacks.LogicAnd(occupied_tiles_);
+    Bitboard blockers = attacks & occupied_tiles_;
 
     // Reset all bits in attacks which are after the first blocker
     if (blockers.GetBits()) {
         unsigned blocker_index = blockers.Bitscan(IsNegative(dir) ? 
             Bitboard::BITSCAN_REVERSE : Bitboard::BITSCAN_FORWARD);
-        attacks = attacks.LogicXor(GetEmptyBoardRayAttacks(blocker_index, dir));
+        attacks = attacks ^ GetEmptyBoardRayAttacks(blocker_index, dir);
     }
 
     return attacks;
@@ -111,26 +111,26 @@ Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, enum Direction dir) con
 
 Bitboard ChessEngine::GetRookAttacks(unsigned tile_index) const {
     Bitboard attacks = GetRayAttacks(tile_index, DIRECTION_NORTH);
-    attacks = attacks.LogicOr(GetRayAttacks(tile_index, DIRECTION_SOUTH));
-    attacks = attacks.LogicOr(GetRayAttacks(tile_index, DIRECTION_EAST));
-    attacks = attacks.LogicOr(GetRayAttacks(tile_index, DIRECTION_WEST));
+    attacks |= GetRayAttacks(tile_index, DIRECTION_SOUTH);
+    attacks |= GetRayAttacks(tile_index, DIRECTION_EAST);
+    attacks |= GetRayAttacks(tile_index, DIRECTION_WEST);
 
     // Handles cases where the first blocker was a friendly
-    return attacks.LogicAnd(friendlies_.Invert());
+    return attacks & ~friendlies_;
 }
 
 Bitboard ChessEngine::GetBishopAttacks(unsigned tile_index) const {
     Bitboard attacks = GetRayAttacks(tile_index, DIRECTION_NORTHEAST);
-    attacks = attacks.LogicOr(GetRayAttacks(tile_index, DIRECTION_NORTHWEST));
-    attacks = attacks.LogicOr(GetRayAttacks(tile_index, DIRECTION_SOUTHEAST));
-    attacks = attacks.LogicOr(GetRayAttacks(tile_index, DIRECTION_SOUTHWEST));
+    attacks |= GetRayAttacks(tile_index, DIRECTION_NORTHWEST);
+    attacks |= GetRayAttacks(tile_index, DIRECTION_SOUTHEAST);
+    attacks |= GetRayAttacks(tile_index, DIRECTION_SOUTHWEST);
 
     // Handles cases where the first blocker was a friendly
-    return attacks.LogicAnd(friendlies_.Invert());
+    return attacks & ~friendlies_;
 }
 
 Bitboard ChessEngine::GetQueenAttacks(unsigned tile_index) const {
-    return GetRookAttacks(tile_index).LogicOr(GetBishopAttacks(tile_index));
+    return GetRookAttacks(tile_index) | GetBishopAttacks(tile_index);
 }
 
 Bitboard ChessEngine::GetKnightAttacks(unsigned tile_index) const {
@@ -150,14 +150,14 @@ Bitboard ChessEngine::GetKingAttacks(unsigned tile_index) const {
     Bitboard king;
 
     king.BitSet(tile_index);
-    attacks = attacks.LogicOr(king.StepNorth());
-    attacks = attacks.LogicOr(king.StepSouth());
-    attacks = attacks.LogicOr(king.StepEast());
-    attacks = attacks.LogicOr(king.StepWest());
-    attacks = attacks.LogicOr(king.StepNorthEast());
-    attacks = attacks.LogicOr(king.StepNorthWest());
-    attacks = attacks.LogicOr(king.StepSouthEast());
-    attacks = attacks.LogicOr(king.StepSouthWest());
+    attacks |= king.StepNorth();
+    attacks |= king.StepSouth();
+    attacks |= king.StepEast();
+    attacks |= king.StepWest();
+    attacks |= king.StepNorthEast();
+    attacks |= king.StepNorthWest();
+    attacks |= king.StepSouthEast();
+    attacks |= king.StepSouthWest();
 
     return attacks;
 }
@@ -174,8 +174,8 @@ void ChessEngine::GenerateBishopMoves(BoardState& bs) {
         move.src_tile_index = bishop_index;
 
         Bitboard attacks = GetBishopAttacks(bishop_index);
-        Bitboard quiet_moves = attacks.LogicAnd(empty_tiles_);
-        attacks = attacks.LogicAnd(targets_);
+        Bitboard quiet_moves = attacks & empty_tiles_;
+        attacks &= targets_;
 
         move.captures = true;
         while (attacks.GetBits()) {
@@ -204,8 +204,8 @@ void ChessEngine::GenerateRookMoves(BoardState& bs) {
         move.src_tile_index = rook_index;
 
         Bitboard attacks = GetRookAttacks(rook_index);
-        Bitboard quiet_moves = attacks.LogicAnd(empty_tiles_);
-        attacks = attacks.LogicAnd(targets_);
+        Bitboard quiet_moves = attacks &empty_tiles_;
+        attacks &= targets_;
 
         move.captures = true;
         while (attacks.GetBits()) {
@@ -233,9 +233,9 @@ void ChessEngine::GenerateQueenMoves(BoardState& bs) {
         queens.BitClear(queen_index);
         move.src_tile_index = queen_index;
 
-        Bitboard attacks = GetRookAttacks(queen_index).LogicOr(GetBishopAttacks(queen_index));
-        Bitboard quiet_moves = attacks.LogicAnd(empty_tiles_);
-        attacks = attacks.LogicAnd(targets_);
+        Bitboard attacks = GetRookAttacks(queen_index) | GetBishopAttacks(queen_index);
+        Bitboard quiet_moves = attacks & empty_tiles_;
+        attacks &= targets_;
 
         move.captures = true;
         while (attacks.GetBits()) {
@@ -264,8 +264,8 @@ void ChessEngine::GenerateKnightMoves(BoardState& bs) {
         move.src_tile_index = knight_index;
 
         Bitboard attacks = GetKnightAttacks(knight_index);
-        Bitboard quiet_moves = attacks.LogicAnd(empty_tiles_);
-        attacks = attacks.LogicAnd(targets_);
+        Bitboard quiet_moves = attacks & empty_tiles_;
+        attacks &= targets_;
 
         move.captures = true;
         while (attacks.GetBits()) {
@@ -296,29 +296,29 @@ void ChessEngine::GeneratePawnMoves(BoardState& bs) {
     } attacks[4];
 
     if (bs.GetPlayerToMove() == COLOR_WHITE) {
-        attacks[0].bb = pawns.StepNorthWest().LogicAnd(targets_);
+        attacks[0].bb = pawns.StepNorthWest() & targets_;
         attacks[0].offset = NORTHWEST_OFFSET;
         attacks[0].captures = true;
-        attacks[1].bb = pawns.StepNorthEast().LogicAnd(targets_);
+        attacks[1].bb = pawns.StepNorthEast() & targets_;
         attacks[1].offset = NORTHEAST_OFFSET;
         attacks[1].captures = true;
-        attacks[2].bb = pawns.StepNorth().LogicAnd(empty_tiles_);
+        attacks[2].bb = pawns.StepNorth() & empty_tiles_;
         attacks[2].offset = NORTH_OFFSET;
         attacks[2].captures = false;
-        attacks[3].bb = attacks[2].bb.StepNorth().LogicAnd(empty_tiles_).LogicAnd(RANK_4);
+        attacks[3].bb = attacks[2].bb.StepNorth() & empty_tiles_ & Bitboard(RANK_4);
         attacks[3].offset = NORTH_OFFSET * 2;
         attacks[3].captures = false;
     } else {
-        attacks[0].bb = pawns.StepSouthEast().LogicAnd(targets_);
+        attacks[0].bb = pawns.StepSouthEast() & targets_;
         attacks[0].offset = SOUTHEAST_OFFSET;
         attacks[0].captures = true;
-        attacks[1].bb = pawns.StepSouthWest().LogicAnd(targets_);
+        attacks[1].bb = pawns.StepSouthWest() & targets_;
         attacks[1].offset = SOUTHWEST_OFFSET;
         attacks[1].captures = true;
-        attacks[2].bb = pawns.StepSouth().LogicAnd(empty_tiles_);
+        attacks[2].bb = pawns.StepSouth() & empty_tiles_;
         attacks[2].offset = SOUTH_OFFSET;
         attacks[2].captures = false;
-        attacks[3].bb = attacks[2].bb.StepSouth().LogicAnd(empty_tiles_).LogicAnd(RANK_5);
+        attacks[3].bb = attacks[2].bb.StepSouth() & empty_tiles_ & Bitboard(RANK_5);
         attacks[3].offset = SOUTH_OFFSET * 2;
         attacks[3].captures = false;
     }
@@ -343,8 +343,8 @@ void ChessEngine::GeneratePawnMoves(BoardState& bs) {
 void ChessEngine::GenerateKingMoves(BoardState& bs) {
     unsigned king_index = bs.GetSelfBitboards().king.BitscanForward();
     Bitboard attacks = GetKingAttacks(king_index);
-    Bitboard quiet_moves = attacks.LogicAnd(empty_tiles_);
-    attacks = attacks.LogicAnd(targets_);
+    Bitboard quiet_moves = attacks & empty_tiles_;
+    attacks &= targets_;
 
     Move move;
     move.piece_type = PIECE_TYPE_KING;
