@@ -5,39 +5,36 @@
 #include "chess_common.h"
 
 
-#define A_FILE                  0x0101010101010101ULL
-#define H_FILE                  0x8080808080808080ULL
-#define RANK_1                  0x00000000000000FFULL
-#define RANK_2                  0x000000000000FF00ULL
-#define RANK_3                  0x0000000000FF0000ULL
-#define RANK_4                  0x00000000FF000000ULL
-#define RANK_5                  0x000000FF00000000ULL
-#define RANK_6                  0x0000FF0000000000ULL
-#define RANK_7                  0x00FF000000000000ULL
-#define RANK_8                  0xFF00000000000000ULL
-#define LIGHT_SQUARES           0x55AA55AA55AA55AAULL
-#define DARK_SQUARES            0xAA55AA55AA55AA55ULL
-
-// TODO: move somewhere else
-#define INITIAL_WHITE_PAWNS     0x000000000000FF00ULL
-#define INITIAL_WHITE_KNIGHTS   0x0000000000000042ULL
-#define INITIAL_WHITE_BISHOPS   0x0000000000000024ULL
-#define INITIAL_WHITE_ROOKS     0x0000000000000081ULL
-#define INITIAL_WHITE_QUEENS    0x0000000000000008ULL
-#define INITIAL_WHITE_KING      0x0000000000000010ULL
-
-// For faster knight attack calculations, shift this knight attack pattern
-// (for a knight on D4) so that it's centered on the knight we want to generate for.
-#define KNIGHT_PATTERN_D4       0x0000142200221400ULL
-#define D4_TILE_INDEX           27
-
-
-
 // Represents chess board attributes (such as locations of pieces) via arrays of bits.
 // Bit->Tile mapping is in little-endian rank-file format: bit0 -> A1, bit1 -> B1, ..., bit8 -> A2
 class Bitboard {
 public:
-    enum BitscanDirection { BITSCAN_FORWARD, BITSCAN_REVERSE };
+    enum class BitscanDirection { Forward, Reverse };
+
+    // TODO: It's potentially cleaner to make these const Bitboards, in a BitboardConstants namespace.
+    static constexpr uint64_t rank_1_bits = 0x00000000000000FFULL;
+    static constexpr uint64_t rank_2_bits = 0x000000000000FF00ULL;
+    static constexpr uint64_t rank_3_bits = 0x0000000000FF0000ULL;
+    static constexpr uint64_t rank_4_bits = 0x00000000FF000000ULL;
+    static constexpr uint64_t rank_5_bits = 0x000000FF00000000ULL;
+    static constexpr uint64_t rank_6_bits = 0x0000FF0000000000ULL;
+    static constexpr uint64_t rank_7_bits = 0x00FF000000000000ULL;
+    static constexpr uint64_t rank_8_bits = 0xFF00000000000000ULL;
+    static constexpr uint64_t a_file_bits = 0x0101010101010101ULL;
+    static constexpr uint64_t h_file_bits = 0x8080808080808080ULL;
+    static constexpr uint64_t light_square_bits = 0x55AA55AA55AA55AAULL;
+    static constexpr uint64_t dark_square_bits = 0xAA55AA55AA55AA55ULL;
+
+    static constexpr uint64_t initial_white_pawn_bits = 0x000000000000FF00ULL;
+    static constexpr uint64_t initial_white_knight_bits = 0x0000000000000042ULL;
+    static constexpr uint64_t initial_white_bishop_bits = 0x0000000000000024ULL;
+    static constexpr uint64_t initial_white_rook_bits = 0x0000000000000081ULL;
+    static constexpr uint64_t initial_white_queen_bits = 0x0000000000000008ULL;
+    static constexpr uint64_t initial_white_king_bits = 0x0000000000000010ULL;
+
+    // For faster knight attack calculations, shift this knight attack pattern
+    // (for a knight on D4) so that it's centered on the knight we want to generate for.
+    static constexpr uint64_t knight_pattern_d4 = 0x0000142200221400ULL;
 
     Bitboard();
     Bitboard(uint64_t bits_);
@@ -73,7 +70,7 @@ public:
     unsigned BitscanReverse() const;
 
     // Parameterized bitscan
-    unsigned Bitscan(enum BitscanDirection dir) const;
+    unsigned Bitscan(BitscanDirection dir) const;
 
     // Bitboard single step functions: Shift the whole bitboard by one tile in a cardinal 
     // direction, removing pieces that would shift off the edge. Return new bitboard value.
@@ -164,18 +161,18 @@ inline unsigned Bitboard::BitscanReverse() const {
 }
 
 // Parameterized bitscan
-inline unsigned Bitboard::Bitscan(enum BitscanDirection dir) const {
-    return (dir == BITSCAN_FORWARD) ? BitscanForward() : BitscanReverse();
+inline unsigned Bitboard::Bitscan(BitscanDirection dir) const {
+    return (dir == BitscanDirection::Forward) ? BitscanForward() : BitscanReverse();
 }
 
 // Mask out pieces on the A or H file in these funcs so they shift off the board instead of wrapping
-inline Bitboard Bitboard::StepEast() const      { return Bitboard((bits_ & ~H_FILE) << 1); }
-inline Bitboard Bitboard::StepWest() const      { return Bitboard((bits_ & ~A_FILE) >> 1); }
+inline Bitboard Bitboard::StepEast() const      { return Bitboard((bits_ & ~h_file_bits) << 1); }
+inline Bitboard Bitboard::StepWest() const      { return Bitboard((bits_ & ~a_file_bits) >> 1); }
 
-inline Bitboard Bitboard::StepNorthWest() const { return Bitboard((bits_ & ~A_FILE) << 7); }
-inline Bitboard Bitboard::StepNorthEast() const { return Bitboard((bits_ & ~H_FILE) << 9); }
-inline Bitboard Bitboard::StepSouthWest() const { return Bitboard((bits_ & ~A_FILE) >> 9); }
-inline Bitboard Bitboard::StepSouthEast() const { return Bitboard((bits_ & ~H_FILE) >> 7); }
+inline Bitboard Bitboard::StepNorthWest() const { return Bitboard((bits_ & ~a_file_bits) << 7); }
+inline Bitboard Bitboard::StepNorthEast() const { return Bitboard((bits_ & ~h_file_bits) << 9); }
+inline Bitboard Bitboard::StepSouthWest() const { return Bitboard((bits_ & ~a_file_bits) >> 9); }
+inline Bitboard Bitboard::StepSouthEast() const { return Bitboard((bits_ & ~h_file_bits) >> 7); }
 
 // No need for masking - at the edge of the board, these just shift out to zero.
 inline Bitboard Bitboard::StepNorth() const     { return Bitboard(bits_ << 8); }

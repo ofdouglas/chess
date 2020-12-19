@@ -4,6 +4,9 @@
 
 #include <cstdio>
 
+
+
+
 Move ChessEngine::SelectMove(BoardState& bs) {
     GenerateMoves(bs);
     assert(move_list_.size() > 0);
@@ -57,19 +60,19 @@ void ChessEngine::GenerateMoves(BoardState& bs) {
 }
 
 // TODO: replace with table lookup. Can use this to generate the tables.
-Bitboard ChessEngine::GetEmptyBoardRayAttacks(unsigned tile_index, enum Direction dir) const {
+Bitboard ChessEngine::GetEmptyBoardRayAttacks(unsigned tile_index, Direction dir) const {
     Bitboard b((uint64_t)1 << tile_index);
 
     int shifts[2] = {};
     switch (dir) {
-        case DIRECTION_NORTH:       shifts[0] =  1; shifts[1] =  0;   break;
-        case DIRECTION_SOUTH:       shifts[0] = -1; shifts[1] =  0;   break;
-        case DIRECTION_EAST:        shifts[0] =  0; shifts[1] =  1;   break;
-        case DIRECTION_WEST:        shifts[0] =  0; shifts[1] = -1;   break;
-        case DIRECTION_NORTHEAST:   shifts[0] =  1; shifts[1] =  1;   break;
-        case DIRECTION_NORTHWEST:   shifts[0] =  1; shifts[1] = -1;   break;
-        case DIRECTION_SOUTHEAST:   shifts[0] = -1; shifts[1] =  1;   break;
-        case DIRECTION_SOUTHWEST:   shifts[0] = -1; shifts[1] = -1;   break;
+        case Direction::North:       shifts[0] =  1; shifts[1] =  0;   break;
+        case Direction::South:       shifts[0] = -1; shifts[1] =  0;   break;
+        case Direction::East:        shifts[0] =  0; shifts[1] =  1;   break;
+        case Direction::West:        shifts[0] =  0; shifts[1] = -1;   break;
+        case Direction::NorthEast:   shifts[0] =  1; shifts[1] =  1;   break;
+        case Direction::NorthWest:   shifts[0] =  1; shifts[1] = -1;   break;
+        case Direction::SouthEast:   shifts[0] = -1; shifts[1] =  1;   break;
+        case Direction::SouthWest:   shifts[0] = -1; shifts[1] = -1;   break;
     }
 
     for (int i = 1; i <= 7; i++) {
@@ -78,31 +81,31 @@ Bitboard ChessEngine::GetEmptyBoardRayAttacks(unsigned tile_index, enum Directio
     return b.BitClear(tile_index);
 }
 
-// A negative attack direction is one for which we use BITSCAN_REVERSE instead of BITSCAN_FORWARD
-// when finding the first blocker (in the context of ray attack generation).
-bool IsNegative(enum Direction dir)  {
+// A negative attack direction is one for which we use BitscanDirection::Reverse instead of 
+// BitscanDirection::Forward when finding the first blocker (in the context of ray attack generation).
+bool IsNegative(Direction dir)  {
     switch (dir) {
-        case DIRECTION_NORTH:       return false;
-        case DIRECTION_SOUTH:       return true;
-        case DIRECTION_EAST:        return false;
-        case DIRECTION_WEST:        return true;
-        case DIRECTION_NORTHEAST:   return false;
-        case DIRECTION_NORTHWEST:   return false;
-        case DIRECTION_SOUTHEAST:   return true;
-        case DIRECTION_SOUTHWEST:   return true;
+        case Direction::North:       return false;
+        case Direction::South:       return true;
+        case Direction::East:        return false;
+        case Direction::West:        return true;
+        case Direction::NorthEast:   return false;
+        case Direction::NorthWest:   return false;
+        case Direction::SouthEast:   return true;
+        case Direction::SouthWest:   return true;
     }
     assert(0);
     return false;
 }
 
-Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, enum Direction dir) const {
+Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, Direction dir) const {
     Bitboard attacks = GetEmptyBoardRayAttacks(tile_index, dir);
     Bitboard blockers = attacks & occupied_tiles_;
 
     // Reset all bits in attacks which are after the first blocker
     if (blockers.GetBits()) {
         unsigned blocker_index = blockers.Bitscan(IsNegative(dir) ? 
-            Bitboard::BITSCAN_REVERSE : Bitboard::BITSCAN_FORWARD);
+            Bitboard::BitscanDirection::Reverse : Bitboard::BitscanDirection::Forward);
         attacks = attacks ^ GetEmptyBoardRayAttacks(blocker_index, dir);
     }
 
@@ -110,20 +113,20 @@ Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, enum Direction dir) con
 }
 
 Bitboard ChessEngine::GetRookAttacks(unsigned tile_index) const {
-    Bitboard attacks = GetRayAttacks(tile_index, DIRECTION_NORTH);
-    attacks |= GetRayAttacks(tile_index, DIRECTION_SOUTH);
-    attacks |= GetRayAttacks(tile_index, DIRECTION_EAST);
-    attacks |= GetRayAttacks(tile_index, DIRECTION_WEST);
+    Bitboard attacks = GetRayAttacks(tile_index, Direction::North);
+    attacks |= GetRayAttacks(tile_index, Direction::South);
+    attacks |= GetRayAttacks(tile_index, Direction::East);
+    attacks |= GetRayAttacks(tile_index, Direction::West);
 
     // Handles cases where the first blocker was a friendly
     return attacks & ~friendlies_;
 }
 
 Bitboard ChessEngine::GetBishopAttacks(unsigned tile_index) const {
-    Bitboard attacks = GetRayAttacks(tile_index, DIRECTION_NORTHEAST);
-    attacks |= GetRayAttacks(tile_index, DIRECTION_NORTHWEST);
-    attacks |= GetRayAttacks(tile_index, DIRECTION_SOUTHEAST);
-    attacks |= GetRayAttacks(tile_index, DIRECTION_SOUTHWEST);
+    Bitboard attacks = GetRayAttacks(tile_index, Direction::NorthEast);
+    attacks |= GetRayAttacks(tile_index, Direction::NorthWest);
+    attacks |= GetRayAttacks(tile_index, Direction::SouthEast);
+    attacks |= GetRayAttacks(tile_index, Direction::SouthWest);
 
     // Handles cases where the first blocker was a friendly
     return attacks & ~friendlies_;
@@ -136,10 +139,10 @@ Bitboard ChessEngine::GetQueenAttacks(unsigned tile_index) const {
 Bitboard ChessEngine::GetKnightAttacks(unsigned tile_index) const {
     int knight_rank = RankFromTileIndex(tile_index);
     int knight_file = FileFromTileIndex(tile_index);        
-    int d4_rank = RankFromTileIndex(D4_TILE_INDEX);
-    int d4_file = FileFromTileIndex(D4_TILE_INDEX);
+    int d4_rank = RankFromTileIndex(static_cast<int>(TileIndex::D4));
+    int d4_file = FileFromTileIndex(static_cast<int>(TileIndex::D4));
 
-    Bitboard attacks(KNIGHT_PATTERN_D4);
+    Bitboard attacks(Bitboard::knight_pattern_d4);
     return attacks.Shift(knight_rank - d4_rank, knight_file - d4_file);    
 }
 
@@ -166,7 +169,7 @@ Bitboard ChessEngine::GetKingAttacks(unsigned tile_index) const {
 void ChessEngine::GenerateBishopMoves(BoardState& bs) {
     Bitboard bishops = bs.GetSelfBitboards().bishops;
     Move move;
-    move.piece_type = PIECE_TYPE_BISHOP;
+    move.piece_type = PieceType::Bishop;
 
     while (bishops.GetBits()) {
         unsigned bishop_index = bishops.BitscanForward();
@@ -196,7 +199,7 @@ void ChessEngine::GenerateBishopMoves(BoardState& bs) {
 void ChessEngine::GenerateRookMoves(BoardState& bs) {
     Bitboard rooks = bs.GetSelfBitboards().rooks;
     Move move;
-    move.piece_type = PIECE_TYPE_ROOK;
+    move.piece_type = PieceType::Rook;
 
     while (rooks.GetBits()) {
         unsigned rook_index = rooks.BitscanForward();
@@ -226,7 +229,7 @@ void ChessEngine::GenerateRookMoves(BoardState& bs) {
 void ChessEngine::GenerateQueenMoves(BoardState& bs) {
     Bitboard queens = bs.GetSelfBitboards().queens;
     Move move;
-    move.piece_type = PIECE_TYPE_QUEEN;
+    move.piece_type = PieceType::Queen;
 
     while (queens.GetBits()) {
         unsigned queen_index = queens.BitscanForward();
@@ -256,7 +259,7 @@ void ChessEngine::GenerateQueenMoves(BoardState& bs) {
 void ChessEngine::GenerateKnightMoves(BoardState& bs) {
     Bitboard knights = bs.GetSelfBitboards().knights;
     Move move;
-    move.piece_type = PIECE_TYPE_KNIGHT;
+    move.piece_type = PieceType::Knight;
 
     while (knights.GetBits()) {
         unsigned knight_index = knights.BitscanForward();
@@ -295,36 +298,36 @@ void ChessEngine::GeneratePawnMoves(BoardState& bs) {
         bool captures;
     } attacks[4];
 
-    if (bs.GetPlayerToMove() == COLOR_WHITE) {
+    if (bs.GetPlayerToMove() == Color::White) {
         attacks[0].bb = pawns.StepNorthWest() & targets_;
-        attacks[0].offset = NORTHWEST_OFFSET;
+        attacks[0].offset = TileIndexOffsetFromDirection(Direction::NorthWest);
         attacks[0].captures = true;
         attacks[1].bb = pawns.StepNorthEast() & targets_;
-        attacks[1].offset = NORTHEAST_OFFSET;
+        attacks[1].offset = TileIndexOffsetFromDirection(Direction::NorthEast);
         attacks[1].captures = true;
         attacks[2].bb = pawns.StepNorth() & empty_tiles_;
-        attacks[2].offset = NORTH_OFFSET;
+        attacks[2].offset = TileIndexOffsetFromDirection(Direction::North);
         attacks[2].captures = false;
-        attacks[3].bb = attacks[2].bb.StepNorth() & empty_tiles_ & Bitboard(RANK_4);
-        attacks[3].offset = NORTH_OFFSET * 2;
+        attacks[3].bb = attacks[2].bb.StepNorth() & empty_tiles_ & Bitboard(Bitboard::rank_4_bits);
+        attacks[3].offset = TileIndexOffsetFromDirection(Direction::North) * 2;
         attacks[3].captures = false;
     } else {
         attacks[0].bb = pawns.StepSouthEast() & targets_;
-        attacks[0].offset = SOUTHEAST_OFFSET;
+        attacks[0].offset = TileIndexOffsetFromDirection(Direction::SouthEast);
         attacks[0].captures = true;
         attacks[1].bb = pawns.StepSouthWest() & targets_;
-        attacks[1].offset = SOUTHWEST_OFFSET;
+        attacks[1].offset = TileIndexOffsetFromDirection(Direction::SouthWest);
         attacks[1].captures = true;
         attacks[2].bb = pawns.StepSouth() & empty_tiles_;
-        attacks[2].offset = SOUTH_OFFSET;
+        attacks[2].offset = TileIndexOffsetFromDirection(Direction::South);
         attacks[2].captures = false;
-        attacks[3].bb = attacks[2].bb.StepSouth() & empty_tiles_ & Bitboard(RANK_5);
-        attacks[3].offset = SOUTH_OFFSET * 2;
+        attacks[3].bb = attacks[2].bb.StepSouth() & empty_tiles_ & Bitboard(Bitboard::rank_5_bits);
+        attacks[3].offset = TileIndexOffsetFromDirection(Direction::South) * 2;
         attacks[3].captures = false;
     }
 
     Move move;
-    move.piece_type = PIECE_TYPE_PAWN;
+    move.piece_type = PieceType::Pawn;
 
     for (int i = 0; i < 4; i++) {
         while (attacks[i].bb.GetBits()) {
@@ -347,7 +350,7 @@ void ChessEngine::GenerateKingMoves(BoardState& bs) {
     attacks &= targets_;
 
     Move move;
-    move.piece_type = PIECE_TYPE_KING;
+    move.piece_type = PieceType::King;
     move.src_tile_index = king_index;
 
     move.captures = true;

@@ -1,8 +1,0 @@
-SRC_DIR := src
-INC_DIR := inc
-OBJ_DIR := obj
-
-CPP_SRC := $(wildcard $(SRC_DIR)/*.cpp)
-OBJ := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CPP_SRC))
-
-CPPFLAGS += -I$(INC_DIR) -g

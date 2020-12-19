@@ -13,8 +13,8 @@ const char* TileContentsArray::tile_names_[64] = {
 
 
 
-TileContents::TileContents(enum Color c, enum PieceType t) : color(c), piece_type(t) {}
-TileContents::TileContents() : color(COLOR_NONE), piece_type(PIECE_TYPE_NONE) {}
+TileContents::TileContents(Color c, PieceType t) : color(c), piece_type(t) {}
+TileContents::TileContents() : color(Color::None), piece_type(PieceType::None) {}
 
 
 TileContentsArray::TileContentsArray() {}

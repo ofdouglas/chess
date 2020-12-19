@@ -3,17 +3,17 @@
 
 BoardState::BoardState() {
     // Initialize pawns
-    bitboards[COLOR_WHITE].pawns = INITIAL_WHITE_PAWNS;
-    bitboards[COLOR_BLACK].pawns = INITIAL_WHITE_PAWNS << (8 * 5);
+    bitboards[static_cast<int>(Color::White)].pawns = Bitboard::initial_white_pawn_bits;
+    bitboards[static_cast<int>(Color::Black)].pawns = Bitboard::initial_white_pawn_bits << (8 * 5);
 
     // Initialize pieces
     for (int i = 0; i < 2; i++) {
-        unsigned shift_amount = (i == COLOR_BLACK) ? 56 : 0UL;  // 7 ranks, 8 files each
-        bitboards[i].knights = INITIAL_WHITE_KNIGHTS << shift_amount;
-        bitboards[i].bishops = INITIAL_WHITE_BISHOPS << shift_amount;
-        bitboards[i].rooks = INITIAL_WHITE_ROOKS << shift_amount;
-        bitboards[i].queens = INITIAL_WHITE_QUEENS << shift_amount;
-        bitboards[i].king = INITIAL_WHITE_KING << shift_amount;
+        unsigned shift_amount = (i == static_cast<int>(Color::Black)) ? 56 : 0UL;  // 7 ranks, 8 files each
+        bitboards[i].knights = Bitboard::initial_white_knight_bits << shift_amount;
+        bitboards[i].bishops = Bitboard::initial_white_bishop_bits << shift_amount;
+        bitboards[i].rooks = Bitboard::initial_white_rook_bits << shift_amount;
+        bitboards[i].queens = Bitboard::initial_white_queen_bits << shift_amount;
+        bitboards[i].king = Bitboard::initial_white_king_bits << shift_amount;
     }
 }
 
@@ -24,28 +24,28 @@ BoardState::BoardState(std::string init_state_fen) {
     memset(this, 0, sizeof(BoardState));
 }
 
-enum Color BoardState::GetPlayerToMove() const {
+Color BoardState::GetPlayerToMove() const {
     // Black moves on odd plies, since the ply count starts at 0.
-    return (ply_counter & 1) ? COLOR_BLACK : COLOR_WHITE;    
+    return (ply_counter & 1) ? Color::Black : Color::White;    
 }
 
 PlayerBitboards& BoardState::GetSelfBitboards() {
-    return bitboards[GetPlayerToMove()];
+    return bitboards[static_cast<int>(GetPlayerToMove())];
 }
 
 PlayerBitboards& BoardState::GetOpponentBitboards() {
-    return bitboards[GetPlayerToMove() ^ 1];
+    return bitboards[static_cast<int>(GetPlayerToMove()) ^ 1];
 }
 
 TileContents BoardState::GetTile(unsigned tile_index) const {
     TileContents tc;
 
-    tc.piece_type = bitboards[COLOR_BLACK].GetTile(tile_index);
-    if (tc.piece_type != PIECE_TYPE_NONE) {
-        tc.color = COLOR_BLACK;
+    tc.piece_type = bitboards[static_cast<int>(Color::Black)].GetTile(tile_index);
+    if (tc.piece_type != PieceType::None) {
+        tc.color = Color::Black;
     } else {
-        tc.piece_type = bitboards[COLOR_WHITE].GetTile(tile_index);
-        tc.color = COLOR_WHITE;
+        tc.piece_type = bitboards[static_cast<int>(Color::White)].GetTile(tile_index);
+        tc.color = Color::White;
     }
 
     return tc;
@@ -69,13 +69,33 @@ bool BoardState::ApplyMove(Move move) {
 
 void BoardState::SetTile(unsigned tile_index, TileContents tc) {
     Bitboard bb;
-    if (tc.color == COLOR_WHITE) {
-        bb = bitboards[COLOR_WHITE].GetBitboardByType(tc.piece_type);
+    if (tc.color == Color::White) {
+        bb = bitboards[static_cast<int>(Color::White)].GetBitboardByType(tc.piece_type);
     } else {
-        bb = bitboards[COLOR_BLACK].GetBitboardByType(tc.piece_type);
+        bb = bitboards[static_cast<int>(Color::Black)].GetBitboardByType(tc.piece_type);
     }
 
     bb.BitSet(tile_index);
 }
 
+double BoardState::GetPlayerEvaluation(const PlayerBitboards& pb) const {
+    constexpr double kPieceWeightPawn = 1.0;
+    constexpr double kPieceWeightKnight = 3.0;
+    constexpr double kPieceWeightBishop = 3.1;
+    constexpr double kPieceWeightRook = 5.2;
+    constexpr double kPieceWeightQueen = 9.0;
+    constexpr double kPieceWeightKing = 20.0;
 
+    double score = 0;
+    score += __builtin_popcountll(pb.pawns.GetBits()) * kPieceWeightPawn;
+    score += __builtin_popcountll(pb.knights.GetBits()) * kPieceWeightKnight;
+    score += __builtin_popcountll(pb.bishops.GetBits()) * kPieceWeightBishop;
+    score += __builtin_popcountll(pb.rooks.GetBits()) * kPieceWeightRook;
+    score += __builtin_popcountll(pb.queens.GetBits()) * kPieceWeightQueen;
+    score += __builtin_popcountll(pb.king.GetBits()) * kPieceWeightKing;
+    return score;
+}
+
+double BoardState::GetEvaluation() const {
+    return GetPlayerEvaluation(bitboards[static_cast<int>(Color::White)]) - GetPlayerEvaluation(bitboards[static_cast<int>(Color::Black)]);
+}

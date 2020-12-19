@@ -115,14 +115,14 @@ TEST(Bitboard_Tests, Bitscan)
     Bitboard b = ~Bitboard(0);
 
     for (int i = 0; i < 64; i++) {
-        unsigned index = b.Bitscan(Bitboard::BITSCAN_FORWARD);
+        unsigned index = b.Bitscan(Bitboard::BitscanDirection::Forward);
         CHECK_EQUAL(i, index);
         b.BitClear(i);
     }
 
     b = ~Bitboard(0);
     for (int i = 63; i >= 0; i--) {
-        unsigned index = b.Bitscan(Bitboard::BITSCAN_REVERSE);
+        unsigned index = b.Bitscan(Bitboard::BitscanDirection::Reverse);
         CHECK_EQUAL(i, index);
         b.BitClear(i);
     }

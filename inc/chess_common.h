@@ -15,60 +15,61 @@
 /******************************************************************************
  * Common definitions
  *****************************************************************************/
-enum Color {
-    COLOR_BLACK,
-    COLOR_WHITE,
-    COLOR_NONE
+// Color::Black and Color::White need to remain as 0 and 1 (or 1 and 0)
+// because they are converted to int and used as array indexes.
+enum class Color {
+    Black = 0,
+    White = 1,
+    None
 };
 
-enum Direction {
-    DIRECTION_NORTH,
-    DIRECTION_SOUTH,
-    DIRECTION_EAST,
-    DIRECTION_WEST,
-    DIRECTION_NORTHEAST,
-    DIRECTION_SOUTHEAST,
-    DIRECTION_SOUTHWEST,
-    DIRECTION_NORTHWEST
+enum class Direction {
+    North,
+    South,
+    East,
+    West,
+    NorthEast,
+    SouthEast,
+    SouthWest,
+    NorthWest
 };
 
-enum PieceType {
-    PIECE_TYPE_PAWN,
-    PIECE_TYPE_KNIGHT,
-    PIECE_TYPE_BISHOP,
-    PIECE_TYPE_ROOK,
-    PIECE_TYPE_KING,
-    PIECE_TYPE_QUEEN,
-    PIECE_TYPE_NONE,
-    PIECE_TYPE_NUM_ELEMENTS
+enum class PieceType {
+    Pawn,
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+    King,
+    None
 };
 
 // Index of a tile (aka square) on the chess board
-enum TileIndex {
-    A1_TILE_INDEX, A2_TILE_INDEX, A3_TILE_INDEX, A4_TILE_INDEX,
-    A5_TILE_INDEX, A6_TILE_INDEX, A7_TILE_INDEX, A8_TILE_INDEX,
-    B1_TILE_INDEX, B2_TILE_INDEX, B3_TILE_INDEX, B4_TILE_INDEX,
-    B5_TILE_INDEX, B6_TILE_INDEX, B7_TILE_INDEX, B8_TILE_INDEX,
-    C1_TILE_INDEX, C2_TILE_INDEX, C3_TILE_INDEX, C4_TILE_INDEX,
-    C5_TILE_INDEX, C6_TILE_INDEX, C7_TILE_INDEX, C8_TILE_INDEX,
-    D1_TILE_INDEX, D2_TILE_INDEX, D3_TILE_INDEX, D4_TILE_INDEX,
-    D5_TILE_INDEX, D6_TILE_INDEX, D7_TILE_INDEX, D8_TILE_INDEX,
-    E1_TILE_INDEX, E2_TILE_INDEX, E3_TILE_INDEX, E4_TILE_INDEX,
-    E5_TILE_INDEX, E6_TILE_INDEX, E7_TILE_INDEX, E8_TILE_INDEX,
-    F1_TILE_INDEX, F2_TILE_INDEX, F3_TILE_INDEX, F4_TILE_INDEX,
-    F5_TILE_INDEX, F6_TILE_INDEX, F7_TILE_INDEX, F8_TILE_INDEX,
-    G1_TILE_INDEX, G2_TILE_INDEX, G3_TILE_INDEX, G4_TILE_INDEX,
-    G5_TILE_INDEX, G6_TILE_INDEX, G7_TILE_INDEX, G8_TILE_INDEX,
-    H1_TILE_INDEX, H2_TILE_INDEX, H3_TILE_INDEX, H4_TILE_INDEX,
-    H5_TILE_INDEX, H6_TILE_INDEX, H7_TILE_INDEX, H8_TILE_INDEX
+enum class TileIndex {
+    A1, A2, A3, A4,
+    A5, A6, A7, A8,
+    B1, B2, B3, B4,
+    B5, B6, B7, B8,
+    C1, C2, C3, C4,
+    C5, C6, C7, C8,
+    D1, D2, D3, D4,
+    D5, D6, D7, D8,
+    E1, E2, E3, E4,
+    E5, E6, E7, E8,
+    F1, F2, F3, F4,
+    F5, F6, F7, F8,
+    G1, G2, G3, G4,
+    G5, G6, G7, G8,
+    H1, H2, H3, H4,
+    H5, H6, H7, H8
 };
 
 struct TileContents {
-    TileContents(enum Color c, enum PieceType t);
+    TileContents(Color c, PieceType t);
     TileContents();
 
-    enum Color color;
-    enum PieceType piece_type;
+    Color color;
+    PieceType piece_type;
 };
 
 struct CastlingRights {
@@ -86,16 +87,16 @@ struct Move {
     Move() : 
         src_tile_index(0),
         dest_tile_index(0), 
-        piece_type(PIECE_TYPE_NONE), 
-        captured_type(PIECE_TYPE_NONE), 
-        promotion_type(PIECE_TYPE_NONE),
+        piece_type(PieceType::None), 
+        captured_type(PieceType::None), 
+        promotion_type(PieceType::None),
         captures(0) {}
 
     uint8_t src_tile_index;
     uint8_t dest_tile_index;
-    enum PieceType piece_type;
-    enum PieceType captured_type;
-    enum PieceType promotion_type;
+    PieceType piece_type;
+    PieceType captured_type;
+    PieceType promotion_type;
     CastlingRights prev_castling_rights;
 
     // During move generation we do not look up the type of piece that would be captured,
@@ -104,18 +105,20 @@ struct Move {
     bool captures;
 };
 
-#define BITS_PER_RANK 8
-#define BITS_PER_FILE 1
-
-#define NORTH_OFFSET         8
-#define SOUTH_OFFSET        -8
-#define EAST_OFFSET          1
-#define WEST_OFFSET         -1
-#define NORTHWEST_OFFSET     7
-#define NORTHEAST_OFFSET     9
-#define SOUTHWEST_OFFSET    -9
-#define SOUTHEAST_OFFSET    -7
-
+// Returns the change in tile index associated with a single step in the given direction.
+inline int TileIndexOffsetFromDirection(Direction dir) {
+    switch(dir) {
+        case Direction::North:          return  8;  break;
+        case Direction::South:          return -8;  break;
+        case Direction::East:           return  1;  break;
+        case Direction::West:           return -1;  break;
+        case Direction::NorthEast:      return  9;  break;
+        case Direction::NorthWest:      return  7;  break;
+        case Direction::SouthEast:      return -7;  break;
+        case Direction::SouthWest:      return -9;  break;
+        default:                        return  0;  break;
+    }
+}
 
 inline unsigned RankFromTileIndex(unsigned tile_index) {
     return tile_index >> 3;

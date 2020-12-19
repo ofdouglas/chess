@@ -5,14 +5,14 @@
  *****************************************************************************/
 
 PieceType PlayerBitboards::GetTile(unsigned tile_index) const {
-    if (pawns.BitTest(tile_index))       return PIECE_TYPE_PAWN;
-    if (knights.BitTest(tile_index))     return PIECE_TYPE_KNIGHT;
-    if (bishops.BitTest(tile_index))     return PIECE_TYPE_BISHOP;
-    if (rooks.BitTest(tile_index))       return PIECE_TYPE_ROOK;
-    if (queens.BitTest(tile_index))      return PIECE_TYPE_QUEEN;
-    if (king.BitTest(tile_index))        return PIECE_TYPE_KING;
+    if (pawns.BitTest(tile_index))       return PieceType::Pawn;
+    if (knights.BitTest(tile_index))     return PieceType::Knight;
+    if (bishops.BitTest(tile_index))     return PieceType::Bishop;
+    if (rooks.BitTest(tile_index))       return PieceType::Rook;
+    if (queens.BitTest(tile_index))      return PieceType::Queen;
+    if (king.BitTest(tile_index))        return PieceType::King;
 
-    return PIECE_TYPE_NONE;
+    return PieceType::None;
 }
 
 Bitboard PlayerBitboards::GetBitboardsUnion() const {
@@ -29,12 +29,12 @@ Bitboard PlayerBitboards::GetBitboardsUnion() const {
 
 Bitboard& PlayerBitboards::GetBitboardByType(enum PieceType type) {
     switch (type){
-        case PIECE_TYPE_PAWN:       return pawns;        break;
-        case PIECE_TYPE_KNIGHT:     return knights;      break;
-        case PIECE_TYPE_BISHOP:     return bishops;      break;
-        case PIECE_TYPE_ROOK:       return rooks;        break;
-        case PIECE_TYPE_QUEEN:      return queens;       break;
-        case PIECE_TYPE_KING:       return king;         break;
+        case PieceType::Pawn:       return pawns;        break;
+        case PieceType::Knight:     return knights;      break;
+        case PieceType::Bishop:     return bishops;      break;
+        case PieceType::Rook:       return rooks;        break;
+        case PieceType::Queen:      return queens;       break;
+        case PieceType::King:       return king;         break;
     }
     assert(0);
     return pawns;

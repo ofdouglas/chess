@@ -29,8 +29,8 @@ private:
     void GenerateQueenMoves(BoardState& bs);
     void GenerateKingMoves(BoardState& bs);
 
-    Bitboard GetEmptyBoardRayAttacks(unsigned tile_index, enum Direction dir) const;
-    Bitboard GetRayAttacks(unsigned tile_index, enum Direction dir) const;
+    Bitboard GetEmptyBoardRayAttacks(unsigned tile_index, Direction dir) const;
+    Bitboard GetRayAttacks(unsigned tile_index, Direction dir) const;
     Bitboard GetRookAttacks(unsigned tile_index) const;
     Bitboard GetBishopAttacks(unsigned tile_index) const;
     Bitboard GetQueenAttacks(unsigned tile_index) const;

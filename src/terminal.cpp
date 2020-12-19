@@ -9,24 +9,24 @@
 void Terminal::PrintTileFromTileContents(TileContents tc) {
     const char* piece = 0;
 
-    if (tc.color == COLOR_BLACK) {
+    if (tc.color == Color::Black) {
         switch (tc.piece_type) {
-            case PIECE_TYPE_KING:       piece = "♔";  break;
-            case PIECE_TYPE_QUEEN:      piece = "♕";  break;
-            case PIECE_TYPE_ROOK:       piece = "♖";  break;
-            case PIECE_TYPE_BISHOP:     piece = "♗";  break;
-            case PIECE_TYPE_KNIGHT:     piece = "♘";  break;
-            case PIECE_TYPE_PAWN:       piece = "♙";  break;
+            case PieceType::King:       piece = "♔";  break;
+            case PieceType::Queen:      piece = "♕";  break;
+            case PieceType::Rook:       piece = "♖";  break;
+            case PieceType::Bishop:     piece = "♗";  break;
+            case PieceType::Knight:     piece = "♘";  break;
+            case PieceType::Pawn:       piece = "♙";  break;
             default:                    piece = "▨";  break;
         }
     } else {
         switch (tc.piece_type) {
-            case PIECE_TYPE_KING:       piece = "♚";  break;
-            case PIECE_TYPE_QUEEN:      piece = "♛";  break;
-            case PIECE_TYPE_ROOK:       piece = "♜";  break;
-            case PIECE_TYPE_BISHOP:     piece = "♝";  break;
-            case PIECE_TYPE_KNIGHT:     piece = "♞";  break;
-            case PIECE_TYPE_PAWN:       piece = "♟";  break;
+            case PieceType::King:       piece = "♚";  break;
+            case PieceType::Queen:      piece = "♛";  break;
+            case PieceType::Rook:       piece = "♜";  break;
+            case PieceType::Bishop:     piece = "♝";  break;
+            case PieceType::Knight:     piece = "♞";  break;
+            case PieceType::Pawn:       piece = "♟";  break;
             default:                    piece = "□";  break;
         }
     }
@@ -55,8 +55,8 @@ void Terminal::PrintBoard(const BoardState& bs) {
 
             // Set color of empty tiles to get board background
             TileContents tile = board.GetTile(tile_index);
-            if (tile.piece_type == PIECE_TYPE_NONE) {
-                tile.color = ((rank + file) & 1) ? COLOR_WHITE : COLOR_BLACK;
+            if (tile.piece_type == PieceType::None) {
+                tile.color = ((rank + file) & 1) ? Color::White : Color::Black;
             }
             PrintTileFromTileContents(tile);
             printf(" ");
@@ -69,7 +69,9 @@ void Terminal::PrintBoard(const BoardState& bs) {
     for (int file = 0; file < 8; file++) {
         printf("%c ", 'a' + file);
     }
-    printf("\n%s to move: \n\n", bs.GetPlayerToMove() == COLOR_WHITE ? "WHITE" : "BLACK");
+    double evaluation = bs.GetEvaluation();
+    printf("\nEvaluation: %s%.1f\n", evaluation > 0 ? "+" : "", evaluation);
+    printf("%s to move: \n\n", bs.GetPlayerToMove() == Color::White ? "WHITE" : "BLACK");
 }
 
 // Returns -1 if invalid tile index

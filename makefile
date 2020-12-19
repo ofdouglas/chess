@@ -17,9 +17,6 @@ TEST_OBJ := $(patsubst $(PROD_SRC_DIR)/%.cpp, $(TEST_BUILD_DIR)/%.o, $(PROD_SRC)
 			$(patsubst $(TEST_SRC_DIR)/%.cpp, $(TEST_BUILD_DIR)/%.o, $(TEST_SRC))
 
 
-$(info $(TEST_OBJ))
-$(info $(PROD_OBJ))
-
 CPPFLAGS += -I$(INC_DIR) -g
 TEST_CPPFLAGS := -I$(INC_DIR) -g -include /usr/include/CppUTest/MemoryLeakDetectorMallocMacros.h
 TEST_LDLIBS += -lCppUTest
@@ -30,8 +27,10 @@ all: run_tests main
 
 
 # Include header dependency rules from the .d files (created by g++ option -MMD)
-DEP = $(OBJ:.o=.d)
--include $(DEP)
+PROD_DEP = $(PROD_OBJ:.o=.d)
+TEST_DEP = $(TEST_OBJ:.o=.d)
+-include $(PROD_DEP)
+-include $(TEST_DEP)
 
 
 # Build the main application

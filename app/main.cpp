@@ -11,8 +11,7 @@
 //         TileContentsArray::GetTileName(dest_tile_index));
 // }
 
-enum PlayerType { PLAYER_TYPE_CPU, PLAYER_TYPE_HUMAN };
-enum PlayerType player_types[2];   // Indexed by COLOR_WHITE and COLOR_BLACK
+enum PlayerType { Cpu, Human } player_types[2];   // Indexed by COLOR_WHITE and COLOR_BLACK
 
 int main(int argc, char* argv[]) {
     srand(time(NULL));
@@ -25,10 +24,10 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < 20; i ++) {
         terminal.PrintBoard(board_state);
 
-        enum Color to_move = board_state.GetPlayerToMove();
+        int to_move = static_cast<int>(board_state.GetPlayerToMove());
         Move move;
 
-        if (player_types[to_move] == PLAYER_TYPE_CPU) {
+        if (player_types[to_move] == PlayerType::Cpu) {
             move = engine.SelectMove(board_state);
             //move.Print();
 
@@ -51,7 +50,7 @@ int main(int argc, char* argv[]) {
 
             TileContents dest_tile = board_state.GetTile(move.dest_tile_index);
             move.captured_type = dest_tile.piece_type;
-            move.captures = move.captured_type != PIECE_TYPE_NONE;
+            move.captures = move.captured_type != PieceType::None;
         }
         
         board_state.ApplyMove(move);

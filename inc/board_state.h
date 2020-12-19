@@ -32,16 +32,20 @@ public:
     // Update board state according to m and return true, if m is valid. Else return false.
     bool ApplyMove(Move m);
 
+    // Return value indicates which player is ahead and by how much. Ex: +1 means white is up a pawn.
+    double GetEvaluation() const;
 
 
 private:
-    struct PlayerBitboards bitboards[2];    // Player pieces, indexed by COLOR_WHITE or COLOR_BLACK
-    struct CastlingRights castling[2];      // Player castling info, indexed by COLOR_WHITE or COLOR_BLACK
+    struct PlayerBitboards bitboards[2];    // Player pieces, indexed by Color::White or Color::Black
+    struct CastlingRights castling[2];      // Player castling info, indexed by Color::White or Color::Black
     Bitboard en_passant_target_bitboard;    // Tiles where en passant capture is legal, in this ply
     unsigned ply_counter;                   // Zero indexed (white moves on ply 0, 2, 4...)
 
     // TODO: implement 50 move rule, which requires the half_move_counter
     //unsigned half_move_counter;             // Num half turns since the last capture / pawn move. Draw at 100.
+
+    double GetPlayerEvaluation(const PlayerBitboards& pb) const;
 };
 
 #endif // BOARD_STATE_H_DEFINED
