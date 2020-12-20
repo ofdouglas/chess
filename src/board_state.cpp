@@ -37,14 +37,14 @@ PlayerBitboards& BoardState::GetOpponentBitboards() {
     return bitboards[static_cast<int>(GetPlayerToMove()) ^ 1];
 }
 
-TileContents BoardState::GetTile(unsigned tile_index) const {
+TileContents BoardState::GetTile(TileIndex index) const {
     TileContents tc;
 
-    tc.piece_type = bitboards[static_cast<int>(Color::Black)].GetTile(tile_index);
+    tc.piece_type = bitboards[static_cast<int>(Color::Black)].GetTile(index);
     if (tc.piece_type != PieceType::None) {
         tc.color = Color::Black;
     } else {
-        tc.piece_type = bitboards[static_cast<int>(Color::White)].GetTile(tile_index);
+        tc.piece_type = bitboards[static_cast<int>(Color::White)].GetTile(index);
         tc.color = Color::White;
     }
 
@@ -67,7 +67,7 @@ bool BoardState::ApplyMove(Move move) {
     return true;
 }
 
-void BoardState::SetTile(unsigned tile_index, TileContents tc) {
+void BoardState::SetTile(TileIndex index, TileContents tc) {
     Bitboard bb;
     if (tc.color == Color::White) {
         bb = bitboards[static_cast<int>(Color::White)].GetBitboardByType(tc.piece_type);
@@ -75,9 +75,13 @@ void BoardState::SetTile(unsigned tile_index, TileContents tc) {
         bb = bitboards[static_cast<int>(Color::Black)].GetBitboardByType(tc.piece_type);
     }
 
-    bb.BitSet(tile_index);
+    bb.BitSet(index.ToInt());
 }
 
+// Possible enhancements to the evaluation:
+//  * Account for doubled, blocked, and isolated pawns
+//  * Account for mobility (total number of legal moves for the player)
+//  * Account for location (piece value squares)
 double BoardState::GetPlayerEvaluation(const PlayerBitboards& pb) const {
     constexpr double kPieceWeightPawn = 1.0;
     constexpr double kPieceWeightKnight = 3.0;
@@ -97,5 +101,6 @@ double BoardState::GetPlayerEvaluation(const PlayerBitboards& pb) const {
 }
 
 double BoardState::GetEvaluation() const {
-    return GetPlayerEvaluation(bitboards[static_cast<int>(Color::White)]) - GetPlayerEvaluation(bitboards[static_cast<int>(Color::Black)]);
+    return GetPlayerEvaluation(bitboards[static_cast<int>(Color::White)])
+        - GetPlayerEvaluation(bitboards[static_cast<int>(Color::Black)]);
 }

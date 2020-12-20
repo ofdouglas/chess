@@ -60,8 +60,8 @@ void ChessEngine::GenerateMoves(BoardState& bs) {
 }
 
 // TODO: replace with table lookup. Can use this to generate the tables.
-Bitboard ChessEngine::GetEmptyBoardRayAttacks(unsigned tile_index, Direction dir) const {
-    Bitboard b((uint64_t)1 << tile_index);
+Bitboard ChessEngine::GetEmptyBoardRayAttacks(TileIndex index, Direction dir) const {
+    Bitboard b((uint64_t)1 << index.ToInt());
 
     int shifts[2] = {};
     switch (dir) {
@@ -78,7 +78,7 @@ Bitboard ChessEngine::GetEmptyBoardRayAttacks(unsigned tile_index, Direction dir
     for (int i = 1; i <= 7; i++) {
         b |= b.Shift(shifts[0], shifts[1]);
     }
-    return b.BitClear(tile_index);
+    return b.BitClear(index.ToInt());
 }
 
 // A negative attack direction is one for which we use BitscanDirection::Reverse instead of 
@@ -98,8 +98,8 @@ bool IsNegative(Direction dir)  {
     return false;
 }
 
-Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, Direction dir) const {
-    Bitboard attacks = GetEmptyBoardRayAttacks(tile_index, dir);
+Bitboard ChessEngine::GetRayAttacks(TileIndex index, Direction dir) const {
+    Bitboard attacks = GetEmptyBoardRayAttacks(index, dir);
     Bitboard blockers = attacks & occupied_tiles_;
 
     // Reset all bits in attacks which are after the first blocker
@@ -112,35 +112,35 @@ Bitboard ChessEngine::GetRayAttacks(unsigned tile_index, Direction dir) const {
     return attacks;
 }
 
-Bitboard ChessEngine::GetRookAttacks(unsigned tile_index) const {
-    Bitboard attacks = GetRayAttacks(tile_index, Direction::North);
-    attacks |= GetRayAttacks(tile_index, Direction::South);
-    attacks |= GetRayAttacks(tile_index, Direction::East);
-    attacks |= GetRayAttacks(tile_index, Direction::West);
+Bitboard ChessEngine::GetRookAttacks(TileIndex index) const {
+    Bitboard attacks = GetRayAttacks(index, Direction::North);
+    attacks |= GetRayAttacks(index, Direction::South);
+    attacks |= GetRayAttacks(index, Direction::East);
+    attacks |= GetRayAttacks(index, Direction::West);
 
     // Handles cases where the first blocker was a friendly
     return attacks & ~friendlies_;
 }
 
-Bitboard ChessEngine::GetBishopAttacks(unsigned tile_index) const {
-    Bitboard attacks = GetRayAttacks(tile_index, Direction::NorthEast);
-    attacks |= GetRayAttacks(tile_index, Direction::NorthWest);
-    attacks |= GetRayAttacks(tile_index, Direction::SouthEast);
-    attacks |= GetRayAttacks(tile_index, Direction::SouthWest);
+Bitboard ChessEngine::GetBishopAttacks(TileIndex index) const {
+    Bitboard attacks = GetRayAttacks(index, Direction::NorthEast);
+    attacks |= GetRayAttacks(index, Direction::NorthWest);
+    attacks |= GetRayAttacks(index, Direction::SouthEast);
+    attacks |= GetRayAttacks(index, Direction::SouthWest);
 
     // Handles cases where the first blocker was a friendly
     return attacks & ~friendlies_;
 }
 
-Bitboard ChessEngine::GetQueenAttacks(unsigned tile_index) const {
-    return GetRookAttacks(tile_index) | GetBishopAttacks(tile_index);
+Bitboard ChessEngine::GetQueenAttacks(TileIndex index) const {
+    return GetRookAttacks(index) | GetBishopAttacks(index);
 }
 
-Bitboard ChessEngine::GetKnightAttacks(unsigned tile_index) const {
-    int knight_rank = RankFromTileIndex(tile_index);
-    int knight_file = FileFromTileIndex(tile_index);        
-    int d4_rank = RankFromTileIndex(static_cast<int>(TileIndex::D4));
-    int d4_file = FileFromTileIndex(static_cast<int>(TileIndex::D4));
+Bitboard ChessEngine::GetKnightAttacks(TileIndex index) const {
+    int knight_rank = index.Rank();
+    int knight_file = index.File();
+    int d4_rank = TileIndex(TileIndex::TileName::D4).Rank();
+    int d4_file = TileIndex(TileIndex::TileName::D4).File();
 
     Bitboard attacks(Bitboard::knight_pattern_d4);
     return attacks.Shift(knight_rank - d4_rank, knight_file - d4_file);    
@@ -148,11 +148,11 @@ Bitboard ChessEngine::GetKnightAttacks(unsigned tile_index) const {
 
 // Pseudo-legal, doesn't care if the attack would place the king in check.
 // Doesn't generate castling moves.
-Bitboard ChessEngine::GetKingAttacks(unsigned tile_index) const {
+Bitboard ChessEngine::GetKingAttacks(TileIndex index) const {
     Bitboard attacks;
     Bitboard king;
 
-    king.BitSet(tile_index);
+    king.BitSet(index.ToInt());
     attacks |= king.StepNorth();
     attacks |= king.StepSouth();
     attacks |= king.StepEast();
@@ -168,121 +168,61 @@ Bitboard ChessEngine::GetKingAttacks(unsigned tile_index) const {
 
 void ChessEngine::GenerateBishopMoves(BoardState& bs) {
     Bitboard bishops = bs.GetSelfBitboards().bishops;
-    Move move;
-    move.piece_type = PieceType::Bishop;
 
     while (bishops.GetBits()) {
         unsigned bishop_index = bishops.BitscanForward();
         bishops.BitClear(bishop_index);
-        move.src_tile_index = bishop_index;
 
         Bitboard attacks = GetBishopAttacks(bishop_index);
         Bitboard quiet_moves = attacks & empty_tiles_;
         attacks &= targets_;
 
-        move.captures = true;
-        while (attacks.GetBits()) {
-            move.dest_tile_index = attacks.BitscanForward();
-            move_list_.push_back(move);
-            attacks.BitClear(move.dest_tile_index);
-        }
-
-        move.captures = false;
-        while (quiet_moves.GetBits()) {
-            move.dest_tile_index = quiet_moves.BitscanForward();
-            move_list_.push_back(move);
-            quiet_moves.BitClear(move.dest_tile_index);
-        }        
+        EnqueueMoves(bs, PieceType::Bishop, TileIndex(bishop_index), attacks, quiet_moves);    
     }
 }
 
 void ChessEngine::GenerateRookMoves(BoardState& bs) {
     Bitboard rooks = bs.GetSelfBitboards().rooks;
-    Move move;
-    move.piece_type = PieceType::Rook;
 
     while (rooks.GetBits()) {
         unsigned rook_index = rooks.BitscanForward();
         rooks.BitClear(rook_index);
-        move.src_tile_index = rook_index;
 
         Bitboard attacks = GetRookAttacks(rook_index);
         Bitboard quiet_moves = attacks &empty_tiles_;
         attacks &= targets_;
 
-        move.captures = true;
-        while (attacks.GetBits()) {
-            move.dest_tile_index = attacks.BitscanForward();
-            move_list_.push_back(move);
-            attacks.BitClear(move.dest_tile_index);
-        }
-
-        move.captures = false;
-        while (quiet_moves.GetBits()) {
-            move.dest_tile_index = quiet_moves.BitscanForward();
-            move_list_.push_back(move);
-            quiet_moves.BitClear(move.dest_tile_index);
-        }        
+        EnqueueMoves(bs, PieceType::Rook, TileIndex(rook_index), attacks, quiet_moves);     
     }
 }
 
 void ChessEngine::GenerateQueenMoves(BoardState& bs) {
     Bitboard queens = bs.GetSelfBitboards().queens;
-    Move move;
-    move.piece_type = PieceType::Queen;
 
     while (queens.GetBits()) {
         unsigned queen_index = queens.BitscanForward();
         queens.BitClear(queen_index);
-        move.src_tile_index = queen_index;
 
         Bitboard attacks = GetRookAttacks(queen_index) | GetBishopAttacks(queen_index);
         Bitboard quiet_moves = attacks & empty_tiles_;
         attacks &= targets_;
 
-        move.captures = true;
-        while (attacks.GetBits()) {
-            move.dest_tile_index = attacks.BitscanForward();
-            move_list_.push_back(move);
-            attacks.BitClear(move.dest_tile_index);
-        }
-
-        move.captures = false;
-        while (quiet_moves.GetBits()) {
-            move.dest_tile_index = quiet_moves.BitscanForward();
-            move_list_.push_back(move);
-            quiet_moves.BitClear(move.dest_tile_index);
-        }        
+        EnqueueMoves(bs, PieceType::Queen, TileIndex(queen_index), attacks, quiet_moves);   
     }
 }
 
 void ChessEngine::GenerateKnightMoves(BoardState& bs) {
     Bitboard knights = bs.GetSelfBitboards().knights;
-    Move move;
-    move.piece_type = PieceType::Knight;
 
     while (knights.GetBits()) {
         unsigned knight_index = knights.BitscanForward();
         knights.BitClear(knight_index);
-        move.src_tile_index = knight_index;
 
         Bitboard attacks = GetKnightAttacks(knight_index);
         Bitboard quiet_moves = attacks & empty_tiles_;
         attacks &= targets_;
 
-        move.captures = true;
-        while (attacks.GetBits()) {
-            move.dest_tile_index = attacks.BitscanForward();
-            move_list_.push_back(move);
-            attacks.BitClear(move.dest_tile_index);
-        }
-
-        move.captures = false;
-        while (quiet_moves.GetBits()) {
-            move.dest_tile_index = quiet_moves.BitscanForward();
-            move_list_.push_back(move);
-            quiet_moves.BitClear(move.dest_tile_index);
-        }
+        EnqueueMoves(bs, PieceType::Knight, TileIndex(knight_index), attacks, quiet_moves);
     }
 }
 
@@ -348,10 +288,15 @@ void ChessEngine::GenerateKingMoves(BoardState& bs) {
     Bitboard attacks = GetKingAttacks(king_index);
     Bitboard quiet_moves = attacks & empty_tiles_;
     attacks &= targets_;
+    EnqueueMoves(bs, PieceType::King, king_index, attacks, quiet_moves);
+}
+
+void ChessEngine::EnqueueMoves(BoardState&bs, PieceType type, TileIndex source, 
+        Bitboard attacks, Bitboard quiet_moves) {
 
     Move move;
-    move.piece_type = PieceType::King;
-    move.src_tile_index = king_index;
+    move.piece_type = type;
+    move.src_tile_index = source.ToInt();
 
     move.captures = true;
     while (attacks.GetBits()) {
@@ -365,5 +310,5 @@ void ChessEngine::GenerateKingMoves(BoardState& bs) {
         move.dest_tile_index = quiet_moves.BitscanForward();
         move_list_.push_back(move);
         quiet_moves.BitClear(move.dest_tile_index);
-    }
+    }    
 }

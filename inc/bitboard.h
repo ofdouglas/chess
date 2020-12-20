@@ -36,8 +36,7 @@ public:
     // (for a knight on D4) so that it's centered on the knight we want to generate for.
     static constexpr uint64_t knight_pattern_d4 = 0x0000142200221400ULL;
 
-    Bitboard();
-    Bitboard(uint64_t bits_);
+    Bitboard(uint64_t bits_ = 0);
 
     // Returns the raw bitboard data
     uint64_t GetBits() const;
@@ -98,7 +97,6 @@ private:
 /******************************************************************************
  * Bitboard - Inline Function Definitions
  *****************************************************************************/
-inline Bitboard::Bitboard() : bits_(0) {}
 inline Bitboard::Bitboard(uint64_t x) : bits_(x) {}
 
 inline uint64_t Bitboard::GetBits() const {
@@ -207,20 +205,20 @@ inline bool Bitboard::operator!=(const Bitboard& other) const {
 // Represents one player's pieces as a set of bitboards
 struct PlayerBitboards {
 
-    // Returns type of piece (or PIECE_TYPE_NONE) which THIS player has at the given index.
-    enum PieceType GetTile(unsigned tile_index) const;
+    // Returns type of piece (or PieceType::None) which THIS player has at the given index.
+    PieceType GetTile(TileIndex index) const;
 
     // Return the logical OR (aka union) of all of this player's bitboards.
     Bitboard GetBitboardsUnion() const;
 
     // Get a reference to one of the bitboards, by piece type
-    Bitboard& GetBitboardByType(enum PieceType type);
+    Bitboard& GetBitboardByType(PieceType type);
 
     // Apply the move to the bitboards
     void MovePiece(Move m);
 
     // Delete the piece at the given index
-    void DeletePiece(unsigned tile_index);
+    void DeletePiece(TileIndex index);
 
     Bitboard pawns;
     Bitboard knights;

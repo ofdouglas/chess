@@ -4,13 +4,13 @@
  * Player Bitboards Class
  *****************************************************************************/
 
-PieceType PlayerBitboards::GetTile(unsigned tile_index) const {
-    if (pawns.BitTest(tile_index))       return PieceType::Pawn;
-    if (knights.BitTest(tile_index))     return PieceType::Knight;
-    if (bishops.BitTest(tile_index))     return PieceType::Bishop;
-    if (rooks.BitTest(tile_index))       return PieceType::Rook;
-    if (queens.BitTest(tile_index))      return PieceType::Queen;
-    if (king.BitTest(tile_index))        return PieceType::King;
+PieceType PlayerBitboards::GetTile(TileIndex index) const {
+    if (pawns.BitTest(index.ToInt()))       return PieceType::Pawn;
+    if (knights.BitTest(index.ToInt()))     return PieceType::Knight;
+    if (bishops.BitTest(index.ToInt()))     return PieceType::Bishop;
+    if (rooks.BitTest(index.ToInt()))       return PieceType::Rook;
+    if (queens.BitTest(index.ToInt()))      return PieceType::Queen;
+    if (king.BitTest(index.ToInt()))        return PieceType::King;
 
     return PieceType::None;
 }
@@ -46,8 +46,8 @@ void PlayerBitboards::MovePiece(Move mv) {
     bb.BitSet(mv.dest_tile_index);
 }
 
-void PlayerBitboards::DeletePiece(unsigned tile_index) {
-    enum PieceType type = GetTile(tile_index);
+void PlayerBitboards::DeletePiece(TileIndex index) {
+    enum PieceType type = GetTile(index);
     Bitboard& bb = GetBitboardByType(type);
-    bb.BitClear(tile_index);
+    bb.BitClear(index.ToInt());
 }

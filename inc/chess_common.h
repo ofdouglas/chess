@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <string>
 
 /******************************************************************************
  * Common definitions
@@ -45,28 +46,40 @@ enum class PieceType {
 };
 
 // Index of a tile (aka square) on the chess board
-enum class TileIndex {
-    A1, A2, A3, A4,
-    A5, A6, A7, A8,
-    B1, B2, B3, B4,
-    B5, B6, B7, B8,
-    C1, C2, C3, C4,
-    C5, C6, C7, C8,
-    D1, D2, D3, D4,
-    D5, D6, D7, D8,
-    E1, E2, E3, E4,
-    E5, E6, E7, E8,
-    F1, F2, F3, F4,
-    F5, F6, F7, F8,
-    G1, G2, G3, G4,
-    G5, G6, G7, G8,
-    H1, H2, H3, H4,
-    H5, H6, H7, H8
+// TODO: probably should go in it's own header.
+class TileIndex {
+public:
+    static constexpr unsigned num_tiles = 64;
+
+    enum class TileName : uint8_t {
+        A1, A2, A3, A4, A5, A6, A7, A8,
+        B1, B2, B3, B4, B5, B6, B7, B8,
+        C1, C2, C3, C4, C5, C6, C7, C8,
+        D1, D2, D3, D4, D5, D6, D7, D8,
+        E1, E2, E3, E4, E5, E6, E7, E8,
+        F1, F2, F3, F4, F5, F6, F7, F8,
+        G1, G2, G3, G4, G5, G6, G7, G8,
+        H1, H2, H3, H4, H5, H6, H7, H8
+    } value_;
+
+    // TODO: TileContents array version of this is now redundant
+    static const std::string name_strings[num_tiles];
+
+    TileIndex(TileName name);
+    TileIndex(int index);
+    TileIndex(int rank, int file);
+
+    int ToInt();
+    bool Isvalid();
+
+    int Rank();
+    int File();
 };
 
+
 struct TileContents {
-    TileContents(Color c, PieceType t);
-    TileContents();
+    TileContents(Color c, PieceType t) : color(c), piece_type(t) {}
+    TileContents() : color(Color::None), piece_type(PieceType::None) {}
 
     Color color;
     PieceType piece_type;
@@ -119,19 +132,5 @@ inline int TileIndexOffsetFromDirection(Direction dir) {
         default:                        return  0;  break;
     }
 }
-
-inline unsigned RankFromTileIndex(unsigned tile_index) {
-    return tile_index >> 3;
-}
-
-inline unsigned FileFromTileIndex(unsigned tile_index) {
-    return tile_index & 7;
-}
-
-inline unsigned TileIndexFromRankAndFile(unsigned rank, unsigned file) {
-    return rank * 8 + file;
-}
-
-
 
 #endif // CHESS_COMMON_H_DEFINED

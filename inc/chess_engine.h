@@ -28,14 +28,17 @@ private:
     void GenerateRookMoves(BoardState& bs);
     void GenerateQueenMoves(BoardState& bs);
     void GenerateKingMoves(BoardState& bs);
+    void EnqueueMoves(BoardState&bs, PieceType type, TileIndex source, 
+        Bitboard attacks, Bitboard quiet_moves);
 
-    Bitboard GetEmptyBoardRayAttacks(unsigned tile_index, Direction dir) const;
-    Bitboard GetRayAttacks(unsigned tile_index, Direction dir) const;
-    Bitboard GetRookAttacks(unsigned tile_index) const;
-    Bitboard GetBishopAttacks(unsigned tile_index) const;
-    Bitboard GetQueenAttacks(unsigned tile_index) const;
-    Bitboard GetKnightAttacks(unsigned tile_index) const;
-    Bitboard GetKingAttacks(unsigned tile_index) const;
+
+    Bitboard GetEmptyBoardRayAttacks(TileIndex index, Direction dir) const;
+    Bitboard GetRayAttacks(TileIndex index, Direction dir) const;
+    Bitboard GetRookAttacks(TileIndex index) const;
+    Bitboard GetBishopAttacks(TileIndex index) const;
+    Bitboard GetQueenAttacks(TileIndex index) const;
+    Bitboard GetKnightAttacks(TileIndex index) const;
+    Bitboard GetKingAttacks(TileIndex index) const;
 
     // Initialized each time GenerateMoves is called
     std::vector<Move> move_list_;

@@ -1,5 +1,4 @@
 #include "chess_common.h"
-#include "tile_contents_array.h"
 #include "terminal.h"
 
 #include <iostream>
@@ -38,7 +37,10 @@ void Terminal::PrintMessage(const char* msg) {
 }
 
 void Terminal::PrintBoard(const BoardState& bs) {
-    TileContentsArray board(bs);
+    TileContents board[TileIndex::num_tiles];
+    for (int i = 0; i < TileIndex::num_tiles; i++) {
+        board[i] = bs.GetTile(i);
+    }
 
     puts("");
     printf("  ");
@@ -54,7 +56,7 @@ void Terminal::PrintBoard(const BoardState& bs) {
             unsigned tile_index = rank * 8 + file;
 
             // Set color of empty tiles to get board background
-            TileContents tile = board.GetTile(tile_index);
+            TileContents tile = board[tile_index];
             if (tile.piece_type == PieceType::None) {
                 tile.color = ((rank + file) & 1) ? Color::White : Color::Black;
             }

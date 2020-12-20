@@ -24,10 +24,10 @@ public:
     PlayerBitboards& GetOpponentBitboards();
 
     // Useful for converting from bitboard representation to array representation of the board.
-    TileContents GetTile(unsigned tile_index) const;
+    TileContents GetTile(TileIndex index) const;
 
     // Useful for test purposes (e.g. adding pieces). Probably doesn't have any use in a game.
-    void SetTile(unsigned tile_index, TileContents tc);
+    void SetTile(TileIndex index, TileContents tc);
 
     // Update board state according to m and return true, if m is valid. Else return false.
     bool ApplyMove(Move m);
