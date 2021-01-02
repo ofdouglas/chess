@@ -37,6 +37,7 @@ public:
     static constexpr uint64_t knight_pattern_d4 = 0x0000142200221400ULL;
 
     Bitboard(uint64_t bits_ = 0);
+    Bitboard(TileIndex index);
 
     // Returns the raw bitboard data
     uint64_t GetBits() const;
@@ -98,6 +99,9 @@ private:
  * Bitboard - Inline Function Definitions
  *****************************************************************************/
 inline Bitboard::Bitboard(uint64_t x) : bits_(x) {}
+
+inline Bitboard::Bitboard(TileIndex index)
+    : bits_((uint64_t)1 << static_cast<int>(index.value_)) {}
 
 inline uint64_t Bitboard::GetBits() const {
     return bits_;

@@ -4,29 +4,33 @@
 TileIndex::TileIndex(TileName name)
     : value_(name) {}
 
-TileIndex::TileIndex(int index)
+TileIndex::TileIndex(unsigned index)
     : value_(static_cast<TileName>(index)) {
     assert(index < num_tiles);
 }
 
-TileIndex::TileIndex(int rank, int file) {
+TileIndex::TileIndex(unsigned rank, unsigned file) {
     TileIndex(rank * 8 + file);
 }
 
-int TileIndex::ToInt() {
-    return static_cast<int>(value_);
+unsigned TileIndex::ToUnsigned() {
+    return static_cast<unsigned>(value_);
 }
 
-bool TileIndex::Isvalid() {
+bool TileIndex::IsValid() {
     return value_ >= TileName::A1 && value_ <= TileName::H8;
 }
 
-int TileIndex::Rank() {
-    return static_cast<int>(value_) >> 3;
+unsigned TileIndex::Rank() {
+    return static_cast<unsigned>(value_) >> 3;
 }
 
-int TileIndex::File() {
-    return static_cast<int>(value_) & 7;
+unsigned TileIndex::File() {
+    return static_cast<unsigned>(value_) & 7;
+}
+
+const std::string& TileIndex::Namestring() {
+    return name_strings[ToUnsigned()];
 }
 
 const std::string TileIndex::name_strings[num_tiles] = {

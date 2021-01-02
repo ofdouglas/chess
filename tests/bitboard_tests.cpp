@@ -7,9 +7,8 @@
 #include "bitboard.h"
 #undef private
 
-SimpleString StringFrom(Bitboard b) {
-    return StringFromFormat("%016lx", b.GetBits());
-}
+#include "test_utils.h"
+
 
 TEST_GROUP(Bitboard_Tests)
 {

@@ -61,7 +61,7 @@ void ChessEngine::GenerateMoves(BoardState& bs) {
 
 // TODO: replace with table lookup. Can use this to generate the tables.
 Bitboard ChessEngine::GetEmptyBoardRayAttacks(TileIndex index, Direction dir) const {
-    Bitboard b((uint64_t)1 << index.ToInt());
+    Bitboard b((uint64_t)1 << index.ToUnsigned());
 
     int shifts[2] = {};
     switch (dir) {
@@ -78,7 +78,7 @@ Bitboard ChessEngine::GetEmptyBoardRayAttacks(TileIndex index, Direction dir) co
     for (int i = 1; i <= 7; i++) {
         b |= b.Shift(shifts[0], shifts[1]);
     }
-    return b.BitClear(index.ToInt());
+    return b.BitClear(index.ToUnsigned());
 }
 
 // A negative attack direction is one for which we use BitscanDirection::Reverse instead of 
@@ -152,7 +152,7 @@ Bitboard ChessEngine::GetKingAttacks(TileIndex index) const {
     Bitboard attacks;
     Bitboard king;
 
-    king.BitSet(index.ToInt());
+    king.BitSet(index.ToUnsigned());
     attacks |= king.StepNorth();
     attacks |= king.StepSouth();
     attacks |= king.StepEast();
@@ -296,7 +296,7 @@ void ChessEngine::EnqueueMoves(BoardState&bs, PieceType type, TileIndex source,
 
     Move move;
     move.piece_type = type;
-    move.src_tile_index = source.ToInt();
+    move.src_tile_index = source.ToUnsigned();
 
     move.captures = true;
     while (attacks.GetBits()) {

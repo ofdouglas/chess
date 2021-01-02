@@ -5,12 +5,12 @@
  *****************************************************************************/
 
 PieceType PlayerBitboards::GetTile(TileIndex index) const {
-    if (pawns.BitTest(index.ToInt()))       return PieceType::Pawn;
-    if (knights.BitTest(index.ToInt()))     return PieceType::Knight;
-    if (bishops.BitTest(index.ToInt()))     return PieceType::Bishop;
-    if (rooks.BitTest(index.ToInt()))       return PieceType::Rook;
-    if (queens.BitTest(index.ToInt()))      return PieceType::Queen;
-    if (king.BitTest(index.ToInt()))        return PieceType::King;
+    if (pawns.BitTest(index.ToUnsigned()))       return PieceType::Pawn;
+    if (knights.BitTest(index.ToUnsigned()))     return PieceType::Knight;
+    if (bishops.BitTest(index.ToUnsigned()))     return PieceType::Bishop;
+    if (rooks.BitTest(index.ToUnsigned()))       return PieceType::Rook;
+    if (queens.BitTest(index.ToUnsigned()))      return PieceType::Queen;
+    if (king.BitTest(index.ToUnsigned()))        return PieceType::King;
 
     return PieceType::None;
 }
@@ -49,5 +49,5 @@ void PlayerBitboards::MovePiece(Move mv) {
 void PlayerBitboards::DeletePiece(TileIndex index) {
     enum PieceType type = GetTile(index);
     Bitboard& bb = GetBitboardByType(type);
-    bb.BitClear(index.ToInt());
+    bb.BitClear(index.ToUnsigned());
 }
