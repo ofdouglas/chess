@@ -1,20 +1,28 @@
 #include "chess_common.h"
-
+#include <stdexcept>
 
 TileIndex::TileIndex(TileName name)
-    : value_(name) {}
+    : value_(name) {
+    if (*this >= num_tiles) {
+        throw std::invalid_argument("Attempt to construct TileIndex(" 
+            + std::to_string(*this) + ")");
+    }
+}
 
 TileIndex::TileIndex(unsigned index)
     : value_(static_cast<TileName>(index)) {
-    assert(index < num_tiles);
+    if (*this >= num_tiles) {
+        throw std::invalid_argument("Attempt to construct TileIndex(" 
+            + std::to_string(*this) + ")");
+    }
+}
+
+TileIndex::operator unsigned() { 
+    return static_cast<unsigned>(value_); 
 }
 
 TileIndex::TileIndex(unsigned rank, unsigned file) {
-    TileIndex(rank * 8 + file);
-}
-
-unsigned TileIndex::ToUnsigned() {
-    return static_cast<unsigned>(value_);
+    *this = TileIndex(rank * 8 + file);
 }
 
 bool TileIndex::IsValid() {
@@ -30,7 +38,7 @@ unsigned TileIndex::File() {
 }
 
 const std::string& TileIndex::Namestring() {
-    return name_strings[ToUnsigned()];
+    return name_strings[static_cast<unsigned>(value_)];
 }
 
 const std::string TileIndex::name_strings[num_tiles] = {

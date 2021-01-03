@@ -1,16 +1,37 @@
 #include "bitboard.h"
+#include <sstream>
+#include <iomanip>
+
+std::ostream& operator<<(std::ostream& os, const Bitboard& b) {
+    std::stringstream sstream;
+
+    // TODO: would be easier to read if printed as: 00 08 08 08 00 00 00 00
+    sstream << "Bitboard\n0x" << std::hex << std::setw(16) << std::setfill('0') << b.GetBits() << "\n";
+
+    for (int rank = 7; rank >= 0; rank--) {
+        sstream << static_cast<char>('A' + rank) << " ";
+        for (int file = 0; file <= 7; file++) {
+            sstream << (b.BitTest(TileIndex(rank, file)) ? " X " : " . ");
+        }
+        sstream << "\n";
+    }
+
+    sstream << "   1  2  3  4  5  6  7  8\n";
+    os << sstream.str();
+    return os;
+}
 
 /******************************************************************************
  * Player Bitboards Class
  *****************************************************************************/
 
 PieceType PlayerBitboards::GetTile(TileIndex index) const {
-    if (pawns.BitTest(index.ToUnsigned()))       return PieceType::Pawn;
-    if (knights.BitTest(index.ToUnsigned()))     return PieceType::Knight;
-    if (bishops.BitTest(index.ToUnsigned()))     return PieceType::Bishop;
-    if (rooks.BitTest(index.ToUnsigned()))       return PieceType::Rook;
-    if (queens.BitTest(index.ToUnsigned()))      return PieceType::Queen;
-    if (king.BitTest(index.ToUnsigned()))        return PieceType::King;
+    if (pawns.BitTest(index))       return PieceType::Pawn;
+    if (knights.BitTest(index))     return PieceType::Knight;
+    if (bishops.BitTest(index))     return PieceType::Bishop;
+    if (rooks.BitTest(index))       return PieceType::Rook;
+    if (queens.BitTest(index))      return PieceType::Queen;
+    if (king.BitTest(index))        return PieceType::King;
 
     return PieceType::None;
 }
@@ -49,5 +70,5 @@ void PlayerBitboards::MovePiece(Move mv) {
 void PlayerBitboards::DeletePiece(TileIndex index) {
     enum PieceType type = GetTile(index);
     Bitboard& bb = GetBitboardByType(type);
-    bb.BitClear(index.ToUnsigned());
+    bb.BitClear(index);
 }

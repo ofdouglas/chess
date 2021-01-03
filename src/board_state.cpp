@@ -75,7 +75,7 @@ void BoardState::SetTile(TileIndex index, TileContents tc) {
         bb = bitboards[static_cast<int>(Color::Black)].GetBitboardByType(tc.piece_type);
     }
 
-    bb.BitSet(index.ToUnsigned());
+    bb.BitSet(index);
 }
 
 // Possible enhancements to the evaluation:

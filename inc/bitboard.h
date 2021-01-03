@@ -43,13 +43,13 @@ public:
     uint64_t GetBits() const;
 
     // Returns true if the bit at the given index is set
-    bool BitTest(unsigned index) const;
+    bool BitTest(TileIndex index) const;
 
     // Sets the bit at the given index
-    Bitboard& BitSet(unsigned index);
+    Bitboard& BitSet(TileIndex index);
 
     // Clears the bit at the given index
-    Bitboard& BitClear(unsigned index);
+    Bitboard& BitClear(TileIndex index);
 
     // Bitwise operators
     Bitboard operator|(const Bitboard& other) const;
@@ -64,13 +64,13 @@ public:
     Bitboard operator~() const;
 
     // Finds index of least significant bit that is set. At least one bit must be set.
-    unsigned BitscanForward() const ;
+    TileIndex BitscanForward() const ;
 
     // Finds index of most significant bit that is set. At least one bit must be set.
-    unsigned BitscanReverse() const;
+    TileIndex BitscanReverse() const;
 
     // Parameterized bitscan
-    unsigned Bitscan(BitscanDirection dir) const;
+    TileIndex Bitscan(BitscanDirection dir) const;
 
     // Bitboard single step functions: Shift the whole bitboard by one tile in a cardinal 
     // direction, removing pieces that would shift off the edge. Return new bitboard value.
@@ -94,6 +94,8 @@ private:
     uint64_t bits_;
 };
 
+std::ostream& operator<<(std::ostream& os, const Bitboard& b);
+
 
 /******************************************************************************
  * Bitboard - Inline Function Definitions
@@ -107,16 +109,16 @@ inline uint64_t Bitboard::GetBits() const {
     return bits_;
 }
 
-inline bool Bitboard::BitTest(unsigned index) const {
+inline bool Bitboard::BitTest(TileIndex index) const {
     return bits_ & ((uint64_t)1 << index);
 }
 
-inline Bitboard& Bitboard::BitSet(unsigned index) {
+inline Bitboard& Bitboard::BitSet(TileIndex index) {
     bits_ |= (uint64_t)1 << index;
     return *this;
 }
 
-inline Bitboard& Bitboard::BitClear(unsigned index) {
+inline Bitboard& Bitboard::BitClear(TileIndex index) {
     bits_ &= ~((uint64_t)1 << index);
     return *this;
 }
@@ -152,18 +154,18 @@ inline Bitboard Bitboard::operator~() const {
     return Bitboard(~bits_);
 }
 
-inline unsigned Bitboard::BitscanForward() const {
+inline TileIndex Bitboard::BitscanForward() const {
     assert(bits_);
     return __builtin_ctzll(bits_); // Result of ctz is undefined if bits == 0
 }
 
-inline unsigned Bitboard::BitscanReverse() const {
+inline TileIndex Bitboard::BitscanReverse() const {
     assert(bits_);
     return 63 - __builtin_clzll(bits_); // Result of clz is undefined if bits == 0
 }
 
 // Parameterized bitscan
-inline unsigned Bitboard::Bitscan(BitscanDirection dir) const {
+inline TileIndex Bitboard::Bitscan(BitscanDirection dir) const {
     return (dir == BitscanDirection::Forward) ? BitscanForward() : BitscanReverse();
 }
 
